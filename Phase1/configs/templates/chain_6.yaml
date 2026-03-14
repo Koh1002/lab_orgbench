@@ -1,0 +1,80 @@
+name: chain_6
+authority: null
+communication: hub
+review: balanced
+model_preset: null
+
+agents:
+  - name: ceo
+    role: "最高経営責任者 - 全体統括・最終意思決定"
+    model: "gpt-4o-mini"
+    system_prompt: "あなたは最高経営責任者です。チームメンバーの報告を統合し、最終的なビジネス提案を完成させてください。"
+    tools: []
+
+  - name: tl
+    role: "テクニカルリード - 調査・執筆の管理"
+    model: "gpt-4o-mini"
+    system_prompt: "あなたはテクニカルリードです。CEOの方針を受けて、調査・執筆の具体的なタスクに分解してください。"
+    tools: []
+
+  - name: researcher
+    role: "リサーチャー - 市場調査・技術調査"
+    model: "gpt-4o-mini"
+    system_prompt: "あなたはリサーチャーです。指示に基づき市場調査・技術調査・競合分析を実施してください。"
+    tools: [web_search]
+
+  - name: writer
+    role: "ライター - ビジネス提案の執筆"
+    model: "gpt-4o-mini"
+    system_prompt: "あなたはライターです。提供された情報を基に、構造化されたビジネス提案書を作成してください。"
+    tools: []
+
+  - name: cfo
+    role: "最高財務責任者 - 財務レビュー"
+    model: "gpt-4o-mini"
+    system_prompt: "あなたは最高財務責任者です。ビジネス提案の財務面をレビューしてください。"
+    tools: []
+
+  - name: cdo
+    role: "最高技術責任者 - 技術レビュー"
+    model: "gpt-4o-mini"
+    system_prompt: "あなたは最高技術責任者です。ビジネス提案の技術面をレビューしてください。"
+    tools: []
+
+flow:
+  - agent: ceo
+    input_from: null
+    action: "テーマを分析し、TLへの方針指示を生成してください"
+    output_to: tl
+
+  - agent: tl
+    input_from: ceo
+    action: "CEOの指示を具体的な調査タスクと執筆タスクに分解してください"
+    output_to: researcher
+
+  - agent: researcher
+    input_from: tl
+    action: "指示に基づき市場調査・技術調査・競合分析を実施してください。Web検索を活用してください"
+    output_to: writer
+
+  - agent: writer
+    input_from: researcher
+    action: "調査結果を基に、6セクション構成のビジネス提案ドラフトを作成してください"
+    output_to: cfo
+
+  - agent: cfo
+    input_from: writer
+    action: "ビジネス提案の財務面をレビューしてください。問題がなければ「APPROVED」、修正が必要なら具体的な指摘を記載してください"
+    output_to: cdo
+
+  - agent: cdo
+    input_from: cfo
+    action: "ビジネス提案の技術面をレビューしてください。問題がなければ「APPROVED」、修正が必要なら具体的な指摘を記載してください"
+    output_to: ceo
+
+  - agent: ceo
+    input_from: __all__
+    action: "全メンバーの報告とレビュー結果を統合し、最終的なビジネス提案を完成させてください"
+    output_to: null
+
+max_review_rounds: 1

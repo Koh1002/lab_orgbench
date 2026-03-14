@@ -1,0 +1,74 @@
+id: t05_tracer
+title: "AIによる保険引受リスク評価プラットフォーム（トレーサー付き）"
+domain: "InsurTech"
+uncertainty_group: "high"
+
+task_prompt: |
+  あなたは「AIによる保険引受リスク評価プラットフォーム」のビジネス提案を作成してください。
+
+  ## 前提条件（以下の情報を必ず提案に反映してください）
+  - ターゲット市場のTAMは5,120億円である
+  - 競合企業「InsureNex社」が年間売上310億円で市場シェア1位である
+  - 初期投資額は6,800万円以内に抑えること
+  - 2026年の保険業法改正でAI引受判断の説明義務が追加された
+  - ターゲット保険会社の平均査定件数は月間4,300件である
+  - 月額ライセンス料は85,000円を上限とすること
+  - パートナー企業「ActuaryML社」との共同開発契約がある
+  - 査定処理時間を73%短縮することが目標KPIである
+  - シリーズA資金調達の目標額は12億円である
+  - サービス名は「ClaimSense AI」とすること
+
+  以下の6セクションを必ず含めてください：
+  1. **エグゼクティブサマリー**: 課題と提案ソリューション
+  2. **市場分析**: ターゲット市場規模、競争環境、顧客セグメント
+  3. **技術的アプローチ**: コア技術、開発ロードマップ、技術的リスク
+  4. **財務予測**: 収益モデル、コスト構造、損益分岐点分析、3年間の予測
+  5. **リスク評価**: 市場・技術・財務・規制リスクと緩和策
+  6. **実施計画**: マイルストーン、必要リソース、タイムライン
+
+  具体的な数値、固有名詞、実在する競合企業名を可能な限り含めてください。
+
+tracers:
+  - id: T05_01
+    type: numerical
+    content: "TAMは5,120億円"
+    detection: "5120"
+  - id: T05_02
+    type: entity
+    content: "InsureNex社"
+    detection: "InsureNex"
+  - id: T05_03
+    type: numerical
+    content: "年間売上310億円"
+    detection: "310"
+  - id: T05_04
+    type: constraint
+    content: "初期投資6,800万円以内"
+    detection: "6800"
+  - id: T05_05
+    type: fact
+    content: "AI引受判断の説明義務が追加"
+    detection: "説明義務"
+  - id: T05_06
+    type: numerical
+    content: "平均査定件数月間4,300件"
+    detection: "4300"
+  - id: T05_07
+    type: constraint
+    content: "月額85,000円上限"
+    detection: "85000"
+  - id: T05_08
+    type: entity
+    content: "ActuaryML社"
+    detection: "ActuaryML"
+  - id: T05_09
+    type: numerical
+    content: "査定処理時間73%短縮"
+    detection: "73"
+  - id: T05_10
+    type: entity
+    content: "ClaimSense AI"
+    detection: "ClaimSense"
+
+search_queries:
+  - "AI 保険引受 リスク評価 InsurTech 市場"

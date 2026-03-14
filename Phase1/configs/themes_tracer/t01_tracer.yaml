@@ -1,0 +1,74 @@
+id: t01_tracer
+title: "中小企業向けAI経理自動化（トレーサー付き）"
+domain: "FinTech"
+uncertainty_group: "low"
+
+task_prompt: |
+  あなたは「中小企業向けAI経理自動化サービス」のビジネス提案を作成してください。
+
+  ## 前提条件（以下の情報を必ず提案に反映してください）
+  - ターゲット市場のTAMは3,847億円である
+  - 競合企業「NeoBooks社」が年間売上240億円で市場シェア1位である
+  - 初期投資額は4,500万円以内に抑えること
+  - 2025年の電子帳簿保存法改正により、全企業にAI監査ログの保存が義務化された
+  - ターゲット顧客の平均経理担当者数は2.3人である
+  - 月額料金は38,000円を上限とすること
+  - パートナー企業「DataStream社」との独占API連携契約がある
+  - 導入企業の経理業務時間を67%削減することが目標KPIである
+  - シリーズA資金調達の目標額は8億円である
+  - サービス名は「SmartKeiri Pro」とすること
+
+  以下の6セクションを必ず含めてください：
+  1. **エグゼクティブサマリー**: 課題と提案ソリューション
+  2. **市場分析**: ターゲット市場規模、競争環境、顧客セグメント
+  3. **技術的アプローチ**: コア技術、開発ロードマップ、技術的リスク
+  4. **財務予測**: 収益モデル、コスト構造、損益分岐点分析、3年間の予測
+  5. **リスク評価**: 市場・技術・財務・規制リスクと緩和策
+  6. **実施計画**: マイルストーン、必要リソース、タイムライン
+
+  具体的な数値、固有名詞、実在する競合企業名を可能な限り含めてください。
+
+tracers:
+  - id: T01_01
+    type: numerical
+    content: "TAMは3,847億円"
+    detection: "3847"
+  - id: T01_02
+    type: entity
+    content: "NeoBooks社"
+    detection: "NeoBooks"
+  - id: T01_03
+    type: numerical
+    content: "年間売上240億円"
+    detection: "240"
+  - id: T01_04
+    type: constraint
+    content: "初期投資4,500万円以内"
+    detection: "4500"
+  - id: T01_05
+    type: fact
+    content: "AI監査ログの保存が義務化"
+    detection: "AI監査ログ"
+  - id: T01_06
+    type: numerical
+    content: "経理担当者数2.3人"
+    detection: "2.3"
+  - id: T01_07
+    type: constraint
+    content: "月額38,000円上限"
+    detection: "38000"
+  - id: T01_08
+    type: entity
+    content: "DataStream社"
+    detection: "DataStream"
+  - id: T01_09
+    type: numerical
+    content: "経理業務時間67%削減"
+    detection: "67"
+  - id: T01_10
+    type: entity
+    content: "SmartKeiri Pro"
+    detection: "SmartKeiri"
+
+search_queries:
+  - "中小企業 AI 経理自動化 市場規模"

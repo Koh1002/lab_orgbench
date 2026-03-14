@@ -1,0 +1,74 @@
+id: t03_tracer
+title: "自治体向けAI住民対応チャットボット（トレーサー付き）"
+domain: "GovTech"
+uncertainty_group: "medium"
+
+task_prompt: |
+  あなたは「自治体向けAI住民対応チャットボット」のビジネス提案を作成してください。
+
+  ## 前提条件（以下の情報を必ず提案に反映してください）
+  - ターゲット市場のTAMは1,290億円である
+  - 競合企業「CivicAI社」が年間売上85億円で市場シェア1位である
+  - 初期開発費は3,200万円以内に抑えること
+  - 2025年のデジタル行政推進法で全自治体にAI窓口導入が努力義務化された
+  - 対象自治体の平均人口は12.7万人である
+  - 月額利用料は22,000円/自治体を上限とすること
+  - パートナー企業「J-CloudGov社」との基盤連携契約がある
+  - 住民問い合わせ対応時間を54%削減することが目標KPIである
+  - シード資金調達の目標額は3億円である
+  - サービス名は「MuniBot Plus」とすること
+
+  以下の6セクションを必ず含めてください：
+  1. **エグゼクティブサマリー**: 課題と提案ソリューション
+  2. **市場分析**: ターゲット市場規模、競争環境、顧客セグメント
+  3. **技術的アプローチ**: コア技術、開発ロードマップ、技術的リスク
+  4. **財務予測**: 収益モデル、コスト構造、損益分岐点分析、3年間の予測
+  5. **リスク評価**: 市場・技術・財務・規制リスクと緩和策
+  6. **実施計画**: マイルストーン、必要リソース、タイムライン
+
+  具体的な数値、固有名詞、実在する競合企業名を可能な限り含めてください。
+
+tracers:
+  - id: T03_01
+    type: numerical
+    content: "TAMは1,290億円"
+    detection: "1290"
+  - id: T03_02
+    type: entity
+    content: "CivicAI社"
+    detection: "CivicAI"
+  - id: T03_03
+    type: numerical
+    content: "年間売上85億円"
+    detection: "85"
+  - id: T03_04
+    type: constraint
+    content: "初期開発費3,200万円以内"
+    detection: "3200"
+  - id: T03_05
+    type: fact
+    content: "AI窓口導入が努力義務化"
+    detection: "AI窓口"
+  - id: T03_06
+    type: numerical
+    content: "平均人口12.7万人"
+    detection: "12.7"
+  - id: T03_07
+    type: constraint
+    content: "月額22,000円上限"
+    detection: "22000"
+  - id: T03_08
+    type: entity
+    content: "J-CloudGov社"
+    detection: "J-CloudGov"
+  - id: T03_09
+    type: numerical
+    content: "対応時間54%削減"
+    detection: "54"
+  - id: T03_10
+    type: entity
+    content: "MuniBot Plus"
+    detection: "MuniBot"
+
+search_queries:
+  - "自治体 AI チャットボット 導入事例"

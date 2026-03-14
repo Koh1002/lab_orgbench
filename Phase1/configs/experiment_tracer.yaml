@@ -1,0 +1,19 @@
+# Phase 1 実験C: トレーサー注入実験
+# 4構成 × 3テーマ × 3反復 = 36回
+
+phase: phase1_C_tracer
+
+templates:
+  - ../orgbench/configs/templates/anchor.yaml
+  - ../orgbench/configs/templates/flat_hub.yaml
+  - ../orgbench/configs/templates/flat_mesh.yaml
+  - Phase1/configs/templates/chain_4.yaml
+
+themes:
+  - Phase1/configs/themes_tracer/t01_tracer.yaml
+  - Phase1/configs/themes_tracer/t03_tracer.yaml
+  - Phase1/configs/themes_tracer/t05_tracer.yaml
+
+replications: 3
+temperature: 0.7
+timeout_sec: 600

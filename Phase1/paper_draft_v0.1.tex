@@ -1,0 +1,956 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{array}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+
+\begin{document}
+
+\title{The Information-Theoretic Cost of Hierarchy:\\
+A Channel-Theoretic Analysis of LLM Multi-Agent Organizations}
+
+\author{
+\IEEEauthorblockN{Koh Shinoda}
+\IEEEauthorblockA{
+% Affiliation here
+}
+}
+
+\maketitle
+
+% ============================================================
+\begin{abstract}
+% ============================================================
+
+% [STATUS: ドラフト — 実験完了後に数値を埋める]
+
+LLM multi-agent systems adopt diverse organizational structures---hierarchies, review protocols, communication topologies---yet no theoretical framework explains \emph{why} some structures outperform others.
+Prior empirical work (including our OrgBench benchmark) has shown that shallow hierarchies consistently outperform deep ones, but the causal mechanism remains unknown.
+%
+We address this gap by modeling multi-agent organizations as \textbf{information processing graphs}, where each agent acts as a communication channel with finite capacity.
+Applying the Data Processing Inequality (DPI), we derive theoretical predictions:
+(1)~information fidelity decays monotonically with chain depth,
+(2)~mesh topologies preserve information better than chains through path redundancy, and
+(3)~review gates function as feedback channels that reduce error rates without increasing capacity.
+%
+However, our empirical analysis reveals that LLM agents are \emph{not} simple noisy channels:
+they exhibit three distinct modes---\textbf{preservation} (relay), \textbf{compression} (filtering), and \textbf{augmentation} (knowledge injection)---depending on their role and input volume.
+We identify \textbf{channel saturation} as a key phenomenon: when input exceeds an agent's effective capacity, output quality collapses (compression ratio drops to 0.06).
+%
+Through controlled experiments with [TODO: N] runs across [TODO: M] configurations, we validate these predictions using six information-theoretic metrics including tracer survival analysis and semantic similarity decay.
+Our framework provides the first principled design guidelines for multi-agent topology: optimize for the \textbf{minimum-capacity bottleneck} in the information flow graph, not the total path length.
+
+% [TODO: 実験結果確定後に具体的数値を追加]
+\end{abstract}
+
+\begin{IEEEkeywords}
+Information theory, Multi-agent systems, Channel capacity, Data processing inequality, Organizational design, Large language models
+\end{IEEEkeywords}
+
+
+% ============================================================
+\section{Introduction}
+\label{sec:intro}
+% ============================================================
+
+% --- 1段落目: 実務的問題 ---
+
+The rapid proliferation of LLM-based multi-agent frameworks---AutoGen~\cite{wu2023autogen}, MetaGPT~\cite{hong2023metagpt}, ChatDev~\cite{qian2024chatdev}, CrewAI, LangGraph---has made organizational design a daily engineering decision.
+Practitioners must choose hierarchy depth, communication topology, and review protocols, yet no principled theory guides these choices.
+The current state of practice is trial-and-error: developers test configurations empirically, at costs of \$100--1,000 per project, without understanding \emph{why} one structure outperforms another.
+
+% --- 2段落目: 学術的ギャップ ---
+
+Recent work has begun to treat topology as an experimental variable.
+MacNet~\cite{qian2025macnet} demonstrated that irregular DAG topologies outperform regular ones at ICLR 2025;
+G-Designer~\cite{yao2025gdesigner} used graph neural networks to generate task-adaptive topologies at ICML 2025.
+However, all such studies share a fundamental limitation:
+they show \emph{what} works but not \emph{why}.
+MacNet cannot explain why irregular topologies are superior.
+G-Designer generates effective topologies but cannot predict their performance without running the full pipeline.
+Without a theoretical framework, each empirical finding remains an isolated data point that cannot generalize to new conditions (different models, agent counts, or task types).
+
+% --- 3段落目: OrgBenchの知見と「なぜ」 ---
+
+Our prior work, OrgBench~\cite{shinoda2026orgbench}, systematically compared 11 information flow designs through 275 controlled runs.
+The results were clear: shallow hierarchies outperform deep ones ($\Delta = 0.38$--$0.46$, $\eta^2 = 0.21$), mesh communication provides marginal gains over hub-and-spoke, and review protocols improve quality modestly ($\Delta = 0.24$).
+But \emph{why} does depth hurt?
+At least three hypotheses are plausible:
+(a)~information distortion accumulates across relay steps;
+(b)~intermediate layers over-filter, discarding relevant content;
+(c)~intermediate layers consume token budget that could improve the final output.
+Distinguishing these requires a theoretical framework---one that can model information flow, capacity constraints, and distortion accumulation across agent chains.
+
+% --- 4段落目: 情報理論の提案 ---
+
+We propose that \textbf{information theory} provides the natural framework.
+Multi-agent organizations are, literally, information processing systems: agents receive text, process it, and produce text.
+Each agent can be modeled as a communication channel with measurable input, output, and capacity constraints.
+Shannon's foundational concepts---mutual information, channel capacity, the Data Processing Inequality, and rate-distortion theory---apply directly.
+
+% [TODO: 予備分析の数値を具体的に引用]
+
+Indeed, preliminary analysis of our OrgBench data reveals striking information-theoretic phenomena.
+The Team Lead agent consistently outputs only 35\% of its input tokens (compression ratio 0.35), acting as a \emph{fixed-rate information filter}.
+In mesh configurations, the CFO and CDO agents receive 4$\times$ more input than in hub configurations, and their compression ratio collapses to 0.06---they output only 6\% of input, exhibiting \textbf{channel saturation}.
+Meanwhile, the CEO agent consistently produces \emph{more} tokens than it receives (compression ratio 1.85), functioning as an \textbf{information amplifier} that augments input with learned knowledge.
+
+These observations suggest that LLM agents are not simple noisy channels subject to the classical Data Processing Inequality, but \emph{adaptive channels} whose behavior varies with input volume and role---a phenomenon that demands a new theoretical treatment.
+
+% --- 5段落目: 貢献 ---
+
+Our contributions are:
+\begin{enumerate}
+    \item A \textbf{formal model} of multi-agent organizations as information processing graphs, where each agent is a communication channel with role-dependent capacity and three operating modes (preservation, compression, augmentation).
+    \item \textbf{Theoretical predictions} derived from the Data Processing Inequality, including the Depth-Distortion Principle (information fidelity decays exponentially with critical-path depth) and the decomposition of information loss into intentional filtering ($D_k^{\text{filter}}$) and unintentional noise ($D_k^{\text{noise}}$).
+    \item \textbf{Six information-theoretic metrics} for quantifying information flow in multi-agent systems: compression ratio, semantic similarity decay, entity preservation rate, numerical fidelity, information density, and tracer survival rate.
+    \item \textbf{Empirical validation} through [TODO: N] controlled experiments, demonstrating that information-theoretic metrics predict output quality better than structural metrics (graph degree, path length) and identifying channel saturation as the primary mechanism behind the ``depth penalty.''
+\end{enumerate}
+
+
+% ============================================================
+\section{Related Work}
+\label{sec:related}
+% ============================================================
+
+% --- 2.1: マルチエージェントのトポロジー研究 ---
+\subsection{Topology as a Variable in Multi-Agent Systems}
+
+The treatment of communication topology as an experimental variable has evolved rapidly.
+First-generation frameworks (AutoGen~\cite{wu2023autogen}, MetaGPT~\cite{hong2023metagpt}, ChatDev~\cite{qian2024chatdev}) embedded fixed topologies without comparison.
+Second-generation work introduced topology variation:
+MacNet~\cite{qian2025macnet} (ICLR 2025) explored DAG-based topologies and discovered a logistic scaling law relating agent count to collective performance;
+G-Designer~\cite{yao2025gdesigner} (ICML 2025) used variational graph autoencoders for task-adaptive topology generation;
+MultiAgentBench~\cite{multiagentbench2025} (ACL 2025) compared star, chain, tree, and graph topologies.
+
+Concurrently, AgentPrune~\cite{agentprune2025} (ICLR 2025) learns sparse communication graphs, showing that pruned topologies outperform dense ones while reducing cost---an empirical finding our saturation theory explains (dense routing saturates weak agents).
+AgentDropout~\cite{agentdropout2025} (ACL 2025) dynamically eliminates redundant agents and edges.
+Shen et al.~\cite{shen2025infoprop} directly study information propagation effects of topologies in LLM-MAS, the closest prior work to ours.
+Cemri et al.~\cite{cemri2025fail} (NeurIPS 2025 spotlight) analyze 1,600+ failure traces across 7 MAS frameworks and find that 79\% of failures stem from coordination issues---supporting the thesis that information flow design, not compute, is the primary bottleneck.
+
+All these studies characterize topology effects empirically.
+Our work differs by providing a \textbf{structured information-flow analysis} that decomposes the effects into distortion ($D_k$) and augmentation ($A_k$) at each agent step, enabling predictions for unseen configurations.
+
+% --- 2.2: 情報理論とLLM ---
+\subsection{Information Theory and Language Models}
+
+The connection between language modeling and information theory has deep roots.
+Shannon himself used natural language to estimate the entropy of English~\cite{shannon1948}.
+Recently, Deletang et al.~\cite{deletang2024compression} (ICLR 2024) argued that ``language modeling is compression,'' showing that LLMs can be viewed as general-purpose compressors that approximate the Kolmogorov complexity of text.
+
+More recently, Ton et al.~\cite{ton2025cot} (ICML 2025) formalized Chain-of-Thought reasoning via information theory, quantifying ``information gain'' at each reasoning step---the single-agent analogue of our per-step $D_k$/$A_k$ analysis.
+Nagle et al.~\cite{nagle2024ratedistortion} (NeurIPS 2024) established rate-distortion bounds for prompt compression with frozen LLMs, providing theoretical limits on how much useful information an LLM can extract from compressed input---directly relevant to our saturation analysis.
+Cheng et al.~\cite{cheng2025mi} model Chain-of-Thought as a Markov chain $X \to Z \to Y$ and apply the DPI to argue that intermediate rationales preserve task-relevant information, the closest single-agent analogue of our multi-agent DPI analysis.
+
+However, all this work focuses on \emph{single} LLM instances or single-agent reasoning chains.
+The information-theoretic behavior of \emph{networks} of LLM agents---where multiple agents with different roles, capacities, and access to external tools form an information processing graph---remains unexplored.
+Our work extends this perspective from single channels to \textbf{heterogeneous networks of channels}.
+
+% --- 2.3: 組織の情報処理理論 ---
+\subsection{Information Processing Theory of Organizations}
+
+Galbraith~\cite{galbraith1974designing} proposed that organizational effectiveness depends on the fit between information processing requirements (task uncertainty) and information processing capacity (organizational design).
+This view treats organizations as information processing systems---precisely the metaphor that LLM multi-agent systems literalize.
+
+However, Galbraith's theory remained qualitative.
+``Information processing capacity'' was never formally defined in terms of Shannon information.
+Daft and Lengel~\cite{daft1986organizational} extended this with media richness theory, but again without mathematical formalization.
+
+Malone~\cite{malone1987coordination} provided a more formal treatment, modeling coordination structures (product hierarchies, functional hierarchies, markets) using queuing theory to analyze tradeoffs between production costs, coordination costs, and vulnerability costs.
+Computational Organization Theory~\cite{carley2002computational} extended this with agent-based simulations (e.g., ORGAHEAD, CONSTRUCT-O), demonstrating computationally that network topology determines information diffusion and task performance---but using rule-based agents, not LLMs.
+
+LLM agents provide the first opportunity to operationalize Galbraith's theory quantitatively:
+``information processing capacity'' maps to channel capacity,
+``information processing requirements'' maps to input entropy,
+and ``fit'' maps to the rate-distortion trade-off.
+Our framework makes these mappings precise.
+
+
+% ============================================================
+\section{Theoretical Framework}
+\label{sec:theory}
+% ============================================================
+
+% --- 3.1: 情報処理グラフモデル ---
+\subsection{Multi-Agent Organizations as Information Processing Graphs}
+
+\begin{definition}[Information Processing Graph]
+A multi-agent organization is a directed acyclic graph $\mathcal{G} = (V, E, f, C)$ where:
+\begin{itemize}
+    \item $V = \{v_1, \ldots, v_n\}$ is the set of agent nodes;
+    \item $E \subseteq V \times V$ is the set of directed communication edges;
+    \item $f_i: \mathcal{X}_i \to \mathcal{Y}_i$ is the information processing function of agent $v_i$ (the LLM generation process);
+    \item $C_i \in \mathbb{R}^+$ is the effective channel capacity of agent $v_i$.
+\end{itemize}
+\end{definition}
+
+Each agent $v_i$ receives input $X_i$ (the concatenation of upstream agents' outputs, system prompt, and task context) and produces output $Y_i$ (the generated text).
+The stochastic mapping $P(Y_i | X_i)$ is determined by the LLM's conditional generation process at temperature $\tau$.
+
+The effective channel capacity $C_i$ is bounded above by the model's context window size, but is typically much smaller in practice due to attention degradation over long contexts~\cite{liu2024lost}.
+We operationalize $C_i$ empirically through the saturation analysis described in Section~\ref{sec:metrics}.
+
+% --- 3.2: LLMチャネルの3モード ---
+\subsection{Three Operating Modes of LLM Channels}
+\label{subsec:modes}
+
+Classical communication channels are characterized by a fixed noise model.
+LLM agents, however, exhibit \textbf{three qualitatively distinct operating modes}, determined by the agent's role and the ratio of input volume to effective capacity:
+
+\begin{definition}[Channel Operating Modes]
+For an LLM agent with input $X_i$ and output $Y_i$:
+\begin{enumerate}
+    \item \textbf{Preservation mode} ($|Y_i| \approx |X_i|$): The agent relays information with minimal transformation. Example: a coordinator forwarding instructions.
+    \item \textbf{Compression mode} ($|Y_i| \ll |X_i|$): The agent filters and summarizes, discarding information deemed irrelevant. Example: a reviewer producing a short assessment from a long proposal.
+    \item \textbf{Augmentation mode} ($|Y_i| > |X_i|$): The agent generates \emph{more} information than received, drawing on learned knowledge or external tools (e.g., web search). Example: a CEO synthesizing a comprehensive proposal from brief reports.
+\end{enumerate}
+\end{definition}
+
+Our preliminary analysis of OrgBench data (Section~\ref{sec:preliminary}) reveals clear mode assignments:
+the CEO consistently operates in augmentation mode (CR $= 1.85$, $D_k$ small, $A_k$ large);
+the TL operates in compression mode (CR $= 0.35$, $D_k \approx 0.65$, $A_k \approx 0$);
+the Researcher varies between augmentation (CR $= 1.76$ in deep configurations with web search) and saturation (CR $= 0.07$ in homo\_haiku where input exceeds 15{,}000 tokens);
+and the CFO/CDO in mesh configurations exhibit saturation (CR $= 0.06$, $D_k \gg 0$).
+These modes are strongly predicted by (a)~the agent's organizational role and (b)~the input-to-capacity ratio $|X_i| / C_i$.
+
+% --- 3.3: DPIとその限界 ---
+\subsection{The Data Processing Inequality and Its Limits}
+\label{subsec:dpi}
+
+\begin{proposition}[Classical DPI Applied to Agent Chains]
+For a Markov chain $X \to Y_1 \to Y_2 \to \cdots \to Y_n$ where each $Y_k$ depends only on $Y_{k-1}$:
+\begin{equation}
+    I(X; Y_n) \leq I(X; Y_{n-1}) \leq \cdots \leq I(X; Y_1) \leq H(X)
+    \label{eq:dpi}
+\end{equation}
+where $I(\cdot; \cdot)$ denotes mutual information and $H(\cdot)$ denotes entropy.
+\end{proposition}
+
+In a deep hierarchy $\text{CEO} \to \text{TL} \to \text{Researcher} \to \text{Writer} \to \text{CFO/CDO} \to \text{CEO}$, the DPI predicts that each relay step can only \emph{lose} information about the original task specification $X$.
+This provides a theoretical basis for the ``depth penalty'' observed in OrgBench.
+
+However, the DPI assumes a strict Markov chain where each agent's output depends \emph{only} on its input.
+LLM agents violate this assumption in two ways:
+\begin{enumerate}
+    \item \textbf{Learned prior knowledge}: An agent in augmentation mode injects information from its training data, creating $I(X; Y_k) > I(X; Y_{k-1})$ if the injected knowledge is relevant to $X$.
+    \item \textbf{External tool access}: A Researcher agent with web search access introduces entirely new information not present in the Markov chain.
+\end{enumerate}
+
+In our framework (Section~\ref{subsec:dpi}), these violations correspond to $A_k > 0$:
+the classical DPI holds when $A_k = 0$ (preservation and compression modes), but is violated when $A_k > 0$ (augmentation mode).
+The overall trend of the chain depends on whether distortion or augmentation dominates:
+if $\sum D_k > \sum A_k$, information about $X$ decays with depth (as observed in OrgBench);
+if $\sum A_k > \sum D_k$, the chain \emph{enriches} the task-relevant information (possible when strong augmentation agents like Researchers are present).
+
+We therefore propose an \textbf{information accounting framework} for LLM agent chains.
+We note upfront that this framework is not a theorem but a \emph{structured accounting identity}: its value lies not in the identity itself, but in the \emph{empirical regularities} of its terms---which we show are predictable from observable agent properties (Section~\ref{subsec:predictions}).
+This approach follows recent work applying information-theoretic decompositions to LLM reasoning chains~\cite{ton2025cot, nagle2024ratedistortion}.
+To make the framework tractable, we first introduce the notion of task information units.
+
+\begin{definition}[Task Information Units]
+\label{def:tiu}
+Given a task input $X$, we define its \textbf{task information unit (TIU) set} $\mathcal{T}(X) = \{t_1, \ldots, t_m\}$ as the set of discrete, individually verifiable information elements in $X$.
+TIUs are classified into four categories:
+\emph{Requirements} (output specifications, e.g., ``include 3-year financial projections''),
+\emph{Facts} (concrete claims, e.g., ``target: SMEs with 50--300 employees''),
+\emph{Constraints} (boundary conditions, e.g., ``initial investment under \textyen 50M''), and
+\emph{Queries} (implicit information needs, e.g., ``what is the market size?'').
+\end{definition}
+
+At each step $k$, we define the \textbf{preserved set}:
+\begin{equation}
+    \text{Pres}(k) = \{ t \in \mathcal{T}(X) : t \text{ is present in } Y_k \}
+\end{equation}
+
+``Present'' is assessed at three levels of fidelity:
+literal (exact string match), semantic (paraphrase-equivalent), and functional (requirement addressed in spirit).
+This yields the \textbf{information preservation rate}:
+\begin{equation}
+    P(k) = \frac{|\text{Pres}(k)|}{|\mathcal{T}(X)|}
+    \label{eq:preservation}
+\end{equation}
+
+We can now give precise definitions to $D_k$ and $A_k$:
+
+\begin{definition}[Information Distortion and Augmentation]
+\label{def:dk_ak}
+At step $k$, the \textbf{information distortion} $D_k$ and \textbf{information augmentation} $A_k$ are:
+\begin{align}
+    D_k &= \frac{|\text{Pres}(k{-}1) \setminus \text{Pres}(k)|}{|\mathcal{T}(X)|} \geq 0 \label{eq:dk} \\
+    A_k &= \frac{|\text{Aug}(k)|}{|\mathcal{T}(X)|} \geq 0 \label{eq:ak}
+\end{align}
+where $\text{Aug}(k) = \{ u \in \text{Content}(Y_k) : u \notin \text{Content}(Y_{k-1}),\; u \text{ is relevant to } X \}$ is the set of new task-relevant information units introduced at step $k$.
+\end{definition}
+
+$D_k$ captures TIUs that were present in the previous step's output but are absent from the current step's output---information that was \emph{lost in transit}.
+$A_k$ captures new task-relevant content that the agent \emph{adds}---from prior knowledge, external tools, or reasoning.
+By construction, the preservation rate evolves as:
+\begin{equation}
+    P(k) = P(k{-}1) - D_k + A_k
+    \label{eq:modified_dpi}
+\end{equation}
+
+Eq.~\ref{eq:modified_dpi} is an \textbf{accounting identity}---it holds by construction.
+Its scientific content lies not in the identity itself, but in the empirical claim that $D_k$ and $A_k$ exhibit \emph{predictable regularities}: $D_k$ is approximately determined by the agent's compression ratio, and $A_k$ by the availability of external tools and the model's capacity (Section~\ref{subsec:predictions}).
+The classical DPI corresponds to $A_k = 0$ for all $k$, yielding monotonic decay.
+
+\subsubsection{Decomposition of $D_k$}
+
+Not all information loss is equal.
+We decompose $D_k$ into two qualitatively distinct components:
+\begin{equation}
+    D_k = D_k^{\text{filter}} + D_k^{\text{noise}}
+    \label{eq:dk_decompose}
+\end{equation}
+
+\begin{itemize}
+    \item $D_k^{\text{filter}}$: \textbf{Intentional filtering}---the agent selectively discards TIUs deemed irrelevant to its subtask.
+    This is a feature, not a bug: a Team Lead extracting research instructions from a CEO's broad directive is performing useful compression.
+    $D_k^{\text{filter}}$ need not reduce output quality.
+    \item $D_k^{\text{noise}}$: \textbf{Unintentional loss}---TIUs that the agent \emph{should} have preserved but failed to, due to attention limitations, context truncation, or processing errors.
+    $D_k^{\text{noise}}$ always reduces output quality.
+\end{itemize}
+
+The distinction is operationally testable.
+If an agent in compression mode selectively retains task-critical TIUs (e.g., numerical targets, key constraints) while discarding background context, $D_k^{\text{filter}}$ dominates.
+If TIU survival is uncorrelated with task relevance---particularly under saturation---$D_k^{\text{noise}}$ dominates.
+Our tracer experiment (Section~\ref{sec:experiment}) is designed to distinguish these cases.
+
+Our preliminary finding that TL compression ratio correlates positively with quality ($r = +0.169$, $p = 0.016$) suggests that TL filtering is \emph{suboptimally aggressive}: $D_k^{\text{noise}}$ is non-negligible, and higher retention (higher CR) yields better quality.
+
+\subsubsection{Sources of $A_k$}
+
+Augmentation arises from three sources:
+\begin{equation}
+    A_k = A_k^{\text{prior}} + A_k^{\text{tool}} + A_k^{\text{reason}}
+\end{equation}
+
+\begin{itemize}
+    \item $A_k^{\text{prior}}$: Knowledge from the LLM's training data (e.g., the CEO enriching a brief market overview with industry benchmarks).
+    \item $A_k^{\text{tool}}$: Information from external tools (e.g., the Researcher injecting web search results).
+    \item $A_k^{\text{reason}}$: Novel inferences drawn from input (e.g., the Writer identifying a risk not mentioned by upstream agents).
+\end{itemize}
+
+$A_k^{\text{tool}}$ is directly measurable from tool call logs.
+$A_k^{\text{prior}}$ can be estimated as new entities in the output that are absent from both the input and tool results.
+$A_k^{\text{reason}}$ is difficult to isolate automatically and is treated as residual in this work.
+
+Our finding that CEO input volume positively predicts quality ($r = +0.207$, $p < 0.001$) suggests that $A_k^{\text{prior}}$ is an increasing function of input volume: a richer input stimulates the CEO to draw on more relevant prior knowledge.
+
+\subsubsection{Mode--$D_k$/$A_k$ Correspondence}
+
+The three operating modes (Definition~2) map cleanly onto the $D_k$/$A_k$ framework:
+
+\begin{table}[t]
+\centering
+\caption{Operating modes and their $D_k$/$A_k$ signatures.}
+\label{tab:mode_dk_ak}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Mode} & $D_k$ & $A_k$ & \textbf{Net} & \textbf{Example} \\
+\midrule
+Preservation & $\approx 0$ & $\approx 0$ & $\approx 0$ & Coordinator relay \\
+Compression  & $> 0$       & $\approx 0$ & $< 0$       & TL (CR$=$0.35) \\
+Augmentation & small       & large       & $> 0$       & CEO (CR$=$1.85) \\
+Saturation   & $\gg 0$     & $\approx 0$ & $\ll 0$     & CFO/mesh (CR$=$0.06) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Saturation (Table~\ref{tab:mode_dk_ak}, bottom row) is an extreme form of compression where $D_k^{\text{noise}} \gg D_k^{\text{filter}}$: the agent cannot process its input and drops information non-selectively.
+
+% --- 3.4: チャネル飽和 ---
+\subsection{Channel Saturation}
+\label{subsec:saturation}
+
+\begin{definition}[Channel Saturation]
+An LLM agent $v_i$ is \textbf{saturated} when its input volume $|X_i|$ exceeds its effective capacity $C_i$, causing a discontinuous drop in output quality:
+\begin{equation}
+    \text{CR}(v_i) = \frac{|Y_i|}{|X_i|} \to \epsilon \quad \text{as} \quad |X_i| \gg C_i
+\end{equation}
+where $\epsilon \ll 1$.
+In the saturated regime, the agent's output contains a vanishingly small fraction of the input information.
+\end{definition}
+
+% [TODO: 飽和閾値の理論的・実証的同定]
+% 予備分析からの示唆:
+% - CFO (GPT-4o-mini): 通常入力 ~1,600 tokens → CR=0.35
+%   mesh入力 ~7,500 tokens → CR=0.06 → 飽和閾値は 3,000-5,000 tokens?
+% - CEO (Haiku): 入力 3,000-12,000 tokens → CR=1.8-1.9 → 飽和せず
+%   → Haikuの飽和閾値は 12,000+ tokens?
+% - 飽和閾値 ≈ f(model_capability, task_complexity)?
+
+Our preliminary data suggests that channel saturation occurs at a model-dependent threshold.
+For GPT-4o-mini agents, saturation appears between 3,000--5,000 input tokens; for Claude Haiku 4.5, the threshold exceeds 12,000 tokens.
+This has direct design implications: \textbf{mesh topologies that route all information to all agents will saturate weak agents}, negating the theoretical advantage of path redundancy.
+
+% --- 3.5: ボトルネック原理 ---
+\subsection{The Bottleneck Principle}
+\label{subsec:bottleneck}
+
+Drawing on the max-flow min-cut theorem from network flow theory, one might expect that overall quality is limited by the minimum-capacity agent.
+However, our empirical analysis of 250 runs reveals a more nuanced picture.
+
+\begin{proposition}[Depth-Distortion Principle]
+The information throughput of a multi-agent organization $\mathcal{G}$ is primarily determined by the \textbf{number of relay steps on the critical path}---the sequence of agents through which information must pass from task input to final output.
+Each relay step introduces a roughly constant rate of information loss:
+\begin{equation}
+    I(X; Y_n) \approx I(X; Y_0) \cdot \alpha^d
+    \label{eq:depth_distortion}
+\end{equation}
+where $d$ is the critical path depth and $\alpha < 1$ is the per-step retention rate.
+\end{proposition}
+
+We validate this through correlation analysis (Section~\ref{sec:preliminary}).
+Critical path depth is the strongest predictor of output quality ($r = -0.255$, $p < 0.0001$), outperforming both min-CR ($r = +0.093$, $p = 0.14$, n.s.) and mean-CR ($r = +0.039$, $p = 0.54$, n.s.).
+
+Crucially, agents \emph{not on the critical path} (e.g., reviewers) do not contribute to depth-distortion even when saturated.
+In flat\_mesh, the CFO and CDO exhibit CR $= 0.06$ (severe saturation), yet this configuration achieves the \emph{highest} quality (OQ $= 3.30$).
+This is because reviewers provide feedback but do not relay the main information flow.
+
+This principle predicts that:
+\begin{itemize}
+    \item Adding an intermediate relay layer (TL with CR $= 0.35$) reduces quality by introducing one additional distortion step, regardless of other agents' capacities.
+    \item The flat\_hub configuration outperforms deep hierarchies because it \emph{eliminates the TL relay step}, reducing critical path depth from 4 to 3.
+    \item Mesh topologies can improve quality by increasing the CEO's input volume ($r = +0.207$, $p < 0.001$), but only if the \emph{critical-path} agents have sufficient capacity.
+    \item Reviewer saturation is tolerable; critical-path saturation is not.
+\end{itemize}
+
+% --- 3.6: トポロジー別の理論的予測 ---
+\subsection{Topology-Specific Predictions}
+\label{subsec:predictions}
+
+We derive predictions for the topologies present in OrgBench:
+
+\begin{table}[t]
+\centering
+\caption{Theoretical predictions by topology.}
+\label{tab:predictions}
+\small
+\begin{tabular}{p{1.5cm}p{2.2cm}p{1.5cm}p{2cm}}
+\toprule
+\textbf{Topology} & \textbf{Info. Path Length} & \textbf{Bottleneck} & \textbf{Prediction} \\
+\midrule
+Chain (deep) & $n$ (max) & TL (CR=0.35) & High distortion \\
+Star (flat\_hub) & 2 (max) & CEO only & Low distortion \\
+Mesh (flat\_mesh) & 1 (direct) & CFO/CDO if saturated & Low distortion \emph{if} capacity sufficient \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% --- 3.7: 検証可能な予測（反直感的予測を含む） ---
+\subsection{Testable Predictions}
+\label{subsec:testable}
+
+Our framework generates six testable predictions, including three that are counterintuitive and would not be derived without the information-flow analysis:
+
+\textbf{H1 (Depth-Distortion, confirmatory):}
+Tracer survival rate decays with critical path depth $d$.
+Expected: $\text{TSR}(d) \propto \alpha^d$ with $\alpha < 1$.
+
+\textbf{H2 (TL as cause, confirmatory):}
+Replacing the TL with a pass-through relay (system prompt: ``forward all information without filtering'') eliminates or significantly reduces the depth penalty.
+If depth=4 with pass-through TL $\approx$ depth=3 without TL, then the TL's filtering---not depth per se---is the primary cause of quality loss.
+If depth=4 with pass-through TL $<$ depth=3, then information distortion occurs even in pure relay, implicating the LLM channel itself.
+
+\textbf{H3 (Capacity-dependent depth penalty, \emph{counterintuitive}):}
+The depth penalty is \emph{model-dependent}: high-capacity models exhibit smaller $D_k$ per step, reducing the decay rate $\alpha$.
+\emph{Prediction}: For sufficiently capable models, deep hierarchies can match or exceed shallow ones, because deeper structures decompose the task into smaller subtasks that each agent can process more effectively.
+\emph{Evidence}: homo\_haiku achieves depth=4, OQ$=$3.22---matching flat\_hub (depth=3, OQ$=$3.22)---because Haiku's TL retains CR$=$0.87 vs.\ GPT-4o-mini's CR$=$0.35.
+In contrast, homo\_gpt (depth=4, all GPT-4o-mini) achieves only OQ$=$2.56, confirming that the depth penalty is severe for low-capacity models but vanishes for high-capacity ones.
+
+\textbf{H4 (Mesh harms weak agents, \emph{counterintuitive}):}
+Mesh topology \emph{reduces} quality when the organization contains low-capacity agents, because mesh routing saturates them.
+\emph{Prediction}: In heterogeneous configurations (strong + weak models), hub-and-spoke outperforms mesh; in homogeneous high-capacity configurations, mesh outperforms hub.
+
+\textbf{H5 (Review is dimension-selective):}
+Review gates function as error-correction channels, primarily reducing $D_k^{\text{noise}}$ in dimensions where specialist reviewers have domain expertise.
+\emph{Prediction}: Review protocols improve quality dimensions aligned with reviewer expertise (Technical Depth for CDO review, Feasibility for integrated review) more than dimensions orthogonal to it.
+\emph{Preliminary evidence}: Comparing anchor (review) vs.\ deep\_noreview, the largest gains are in Technical Depth ($\Delta = +0.34$) and Feasibility ($\Delta = +0.20$), while Novelty ($\Delta = +0.08$) and Financial Rigor ($\Delta = -0.02$) show negligible change.
+
+\textbf{H6 (Augmentation is input-dependent):}
+$A_k^{\text{prior}}$ for augmentation-mode agents (CEO) is an increasing function of input volume.
+\emph{Prediction}: CEO quality improves with more input information, with no saturation within current context window limits.
+
+
+% ============================================================
+\section{Information-Theoretic Metrics}
+\label{sec:metrics}
+% ============================================================
+
+We define six metrics to quantify information flow through agent organizations.
+
+\subsection{Token-Level Metrics (Model-Free)}
+
+\textbf{M1: Compression Ratio (CR).}
+\begin{equation}
+    \text{CR}(v_i) = \frac{|Y_i|_{\text{tokens}}}{|X_i|_{\text{tokens}}}
+\end{equation}
+Measures the token-level expansion or contraction at each agent.
+$\text{CR} > 1$ indicates augmentation; $\text{CR} \ll 1$ with high input indicates saturation.
+
+% [STATUS: ✅ 既存データで計算済み（予備分析）]
+
+\textbf{M2: Information Density (ID).}
+\begin{equation}
+    \text{ID}(Y_i) = \frac{|\text{unique n-grams}(Y_i)|}{|Y_i|_{\text{tokens}}}
+\end{equation}
+Measures lexical diversity. Low ID indicates repetitive or formulaic output, a symptom of saturation.
+
+% [TODO: 実装 — n=3 (trigram) を標準とする。既存output.mdから計算可能]
+
+\subsection{Semantic Metrics (Embedding-Based)}
+
+\textbf{M3: Semantic Similarity Decay (SSD).}
+\begin{equation}
+    \text{SSD}(k) = \cos\bigl(\text{emb}(X_0),\, \text{emb}(Y_k)\bigr)
+\end{equation}
+where $X_0$ is the original task prompt and $Y_k$ is the output at step $k$.
+Measures how far the output has drifted from the original task specification.
+
+% [TODO: 実装 — text-embedding-3-small を使用。全文テキストが必要 → orchestrator修正後]
+
+\textbf{M4: Cross-Step Mutual Information Estimate (CSMI).}
+\begin{equation}
+    \hat{I}(Y_{k-1}; Y_k) \approx g\bigl(\cos(\text{emb}(Y_{k-1}), \text{emb}(Y_k))\bigr)
+\end{equation}
+Embedding-based approximation of mutual information between consecutive steps.
+
+% [TODO: 推定手法の選定 — KSG estimator vs MINE vs 簡易cosine-based proxy]
+% 実用上はcosine similarityをMIのproxyとして使い、
+% 厳密なMI推定はablationとして実施するのが現実的か？
+
+\subsection{Content Preservation Metrics}
+
+\textbf{M5: Entity Preservation Rate (EPR).}
+\begin{equation}
+    \text{EPR}(X_i, Y_i) = \frac{|\text{NER}(X_i) \cap \text{NER}(Y_i)|}{|\text{NER}(X_i)|}
+\end{equation}
+Fraction of named entities in the input that survive to the output.
+
+% [TODO: 実装 — spaCy日本語モデル or multilingual NER]
+% 課題: 日本語テキストのNER精度。英語に翻訳してからNERする方が精度が高い可能性
+
+\textbf{M6: Numerical Fidelity (NF).}
+\begin{equation}
+    \text{NF}(X_i, Y_i) = \frac{|\text{nums}(X_i) \cap \text{nums}(Y_i)|}{|\text{nums}(X_i)|}
+\end{equation}
+Fraction of numerical values that are accurately preserved.
+
+% [TODO: 実装 — regex-based数値抽出。「1兆3,412億円」等の日本語数値表現への対応が必要]
+
+\subsection{Controlled Information Injection}
+
+\textbf{M7: Tracer Survival Rate (TSR).}
+We inject $K$ synthetic ``tracer'' facts into the task prompt (fictitious company names, fabricated statistics, specific constraints) and measure what fraction survives to the final output:
+\begin{equation}
+    \text{TSR} = \frac{1}{K} \sum_{j=1}^{K} \mathbb{1}[\text{tracer}_j \in Y_{\text{final}}]
+\end{equation}
+
+% [TODO: 設計と実装]
+% - トレーサーの種類: 架空固有名詞、架空数値、架空事実、制約条件
+% - 各テーマに10個のトレーサーを埋め込み
+% - 検出方法: exact match + fuzzy match (数値の丸め等に対応)
+% - 各ステップでの検出率を追跡 → 生存曲線を構築
+
+This metric provides the most direct test of the DPI: if information is monotonically lost across relay steps, TSR should decrease with chain depth.
+Unlike M3--M6, TSR is independent of embedding models and NER accuracy, providing a model-free ground truth for information preservation.
+
+
+% ============================================================
+\section{Preliminary Empirical Analysis}
+\label{sec:preliminary}
+% ============================================================
+
+Before conducting the full information-theoretic experiment (Section~\ref{sec:experiment}), we analyze the existing OrgBench pilot data (275 runs across 11 configurations) to validate our theoretical framework and guide experimental design.
+
+% --- 5.1: CR分析 ---
+\subsection{Compression Ratio Analysis}
+
+Table~\ref{tab:cr} presents the mean compression ratio by agent role and configuration.
+
+\begin{table}[t]
+\centering
+\caption{Mean compression ratio (CR = output tokens / input tokens) by agent and configuration. Bold indicates extreme values discussed in text.}
+\label{tab:cr}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Config} & \textbf{CEO} & \textbf{TL} & \textbf{Res.} & \textbf{Wri.} & \textbf{CFO} & \textbf{CDO} \\
+\midrule
+anchor       & 1.85 & 0.35 & 1.61 & 0.66 & 0.35 & 0.23 \\
+flat\_hub    & 1.90 & ---  & 1.10 & 0.75 & 0.33 & 0.26 \\
+flat\_mesh   & 1.80 & ---  & 0.50 & 0.51 & \textbf{0.06} & \textbf{0.06} \\
+deep\_noreview & 1.92 & 0.35 & 1.76 & 0.66 & ---  & ---  \\
+homo\_haiku  & 1.81 & 0.87 & 0.07 & 1.17 & 0.83 & 0.83 \\
+homo\_gpt    & 1.31 & 0.54 & 0.15 & 0.72 & 0.36 & 0.21 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three findings emerge:
+
+\textbf{Finding 1: Role determines operating mode.}
+The CEO consistently operates in augmentation mode (CR $\approx$ 1.85), synthesizing comprehensive proposals from partial reports.
+The TL operates in compression mode (CR $\approx$ 0.35), filtering 65\% of input.
+These roles are stable across configurations, suggesting that the agent's \emph{system prompt} (not the topology) determines its channel mode.
+
+\textbf{Finding 2: Channel saturation is real and topology-dependent.}
+In flat\_mesh, the CFO and CDO receive $\sim$7,500 tokens (4$\times$ their typical input) and their CR collapses to 0.06.
+This is not gradual degradation but a phase transition: the agents effectively cease to produce useful output.
+The saturation threshold for GPT-4o-mini appears to be 3,000--5,000 tokens for the reviewer role.
+
+\textbf{Finding 3: Model capability ≈ channel capacity.}
+In homo\_haiku (all Claude Haiku 4.5), most agents maintain CR $>$ 0.8 regardless of input volume, and TL achieves CR = 0.87 vs. 0.35 in heterogeneous configurations.
+Haiku's larger effective capacity allows it to preserve more information at each step.
+
+% --- 5.2: ボトルネック分析 ---
+\subsection{Bottleneck Analysis}
+
+\begin{table}[t]
+\centering
+\caption{CEO final integration step: mean input tokens vs. output quality.}
+\label{tab:bottleneck}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Config} & \textbf{CEO input} & \textbf{OQ} & \textbf{Bottleneck agent} \\
+\midrule
+flat\_mesh   & 10,591 & \textbf{3.30} & CFO/CDO (saturated) \\
+homo\_haiku  & 9,459  & \textbf{3.22} & none (all high-cap.) \\
+flat\_hub    & 5,331  & \textbf{3.22} & none \\
+anchor       & 7,064  & 2.92          & TL (CR=0.35) \\
+deep\_noreview & 4,941 & 2.68         & TL (CR=0.35) \\
+homo\_gpt    & 4,759  & 2.56          & all (low-cap. model) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:bottleneck} reveals a counterintuitive result: the CEO's input volume \emph{positively} correlates with quality ($r = +0.207$, $p < 0.001$, $n = 250$).
+More information reaching the CEO leads to better output, not worse.
+
+Table~\ref{tab:correlations} presents the full correlation analysis.
+The strongest predictor of output quality is \textbf{critical path depth} ($r = -0.255$, $p < 0.0001$)---configurations with fewer relay steps produce higher quality.
+The second strongest is CEO input volume ($r = +0.207$, $p < 0.001$).
+The TL's compression ratio also shows a significant positive correlation ($r = +0.169$, $p = 0.016$): when the TL preserves more information, quality improves.
+
+Notably, min-CR across all agents shows a \emph{negative} correlation with quality ($r = -0.135$, $p = 0.032$).
+This seemingly paradoxical result arises because the highest-quality configuration (flat\_mesh) has severely saturated reviewers (CFO/CDO at CR $= 0.06$), which pull down the min-CR but do not affect the main information flow.
+When restricted to critical-path agents, the correlation becomes non-significant ($r = +0.093$, $p = 0.14$), confirming that \textbf{reviewer saturation is harmless while critical-path depth is the primary quality determinant}.
+
+\begin{table}[t]
+\centering
+\caption{Correlation of candidate predictors with overall quality ($n = 250$ multi-agent runs).}
+\label{tab:correlations}
+\small
+\begin{tabular}{lccl}
+\toprule
+\textbf{Predictor} & \textbf{Pearson} $r$ & $p$ & \textbf{Sig.} \\
+\midrule
+Critical path depth       & $-0.255$ & $< .0001$ & *** \\
+CEO final input tokens    & $+0.207$ & $.0009$   & ** \\
+TL compression ratio      & $+0.169$ & $.016$    & * \\
+Min CR (all agents)       & $-0.135$ & $.032$    & * \\
+Writer CR                 & $+0.114$ & $.071$    & n.s. \\
+Min CR (critical path)    & $+0.093$ & $.141$    & n.s. \\
+Mean CR (critical path)   & $+0.039$ & $.535$    & n.s. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These findings support the Depth-Distortion Principle (Proposition~3) rather than a simple min-capacity bottleneck model.
+The causal mechanism for the ``depth penalty'' appears to be:
+(1)~the TL acts as a fixed-rate filter (CR $\approx 0.35$), discarding 65\% of input;
+(2)~this reduces the information available to downstream agents;
+(3)~consequently, the CEO's final integration step receives less raw material, producing a lower-quality synthesis.
+Eliminating the TL (flat configurations) removes this filter, allowing more information to reach the CEO and yielding higher quality.
+
+
+% ============================================================
+\section{Experimental Design}
+\label{sec:experiment}
+% ============================================================
+
+% [TODO: 全セクション — Phase 1追加実験の設計]
+
+Building on the preliminary analysis, we design three targeted experiments to validate our theoretical predictions.
+
+\subsection{Experiment A: Full-Trace Re-Run}
+
+% [TODO: orchestrator.py修正後に実行]
+% 目的: 各ステップの全文テキストを取得し、M2-M6を計算可能にする
+% 構成: anchor, flat_hub, flat_mesh, deep_noreview (4構成)
+% テーマ: 5テーマ × 3反復 = 60回
+% 推定コスト: ~$2.4
+
+We re-run 4 representative configurations (anchor, flat\_hub, flat\_mesh, deep\_noreview) with full-text step traces, enabling computation of all six metrics across every agent step.
+
+\subsection{Experiment B: Chain Depth Variation}
+
+% [TODO: chain_2〜6のYAMLテンプレート作成、実行]
+% 目的: Information Distortion Curveの構築
+% 構成: chain長 2/3/4/5/6 (5構成)
+% テーマ: 5テーマ × 3反復 = 75回
+% 推定コスト: ~$2.3
+
+To directly test the DPI prediction that information fidelity decays with chain depth, we construct 5 configurations with chain lengths 2 through 6, holding all other variables constant.
+
+\subsection{Experiment C: Tracer Injection}
+
+% [TODO: トレーサー付きテーマYAML作成、trace.py実装、実行]
+% 目的: 情報保存の直接測定
+% 構成: 4構成 × 3テーマ(トレーサー付き) × 3反復 = 36回
+% 推定コスト: ~$1.4
+
+We inject 10 synthetic tracer facts per theme and track their survival across agent steps, providing a model-free ground truth for information preservation.
+
+
+% ============================================================
+\section{Results}
+\label{sec:results}
+% ============================================================
+
+% [TODO: 実験完了後に記述]
+
+\subsection{Information Distortion Curve}
+% [TODO: Experiment B のデータから]
+% - chain長 d vs 各情報指標（M2-M7）のプロット
+% - 減衰モデル（線形/指数/対数）のフィッティング、AIC/BICで選択
+% - 理論予測（DPIによる単調減少）との一致度
+
+\subsection{Topology-Dependent Information Preservation}
+% [TODO: Experiment A のデータから]
+% - 構成別のM2-M7指標の比較
+% - Kruskal-Wallis検定でトポロジー間の差異を検定
+% - Table~\ref{tab:predictions}の理論予測 vs 実測
+
+\subsection{Channel Saturation Threshold}
+% [TODO: Experiment A のデータから]
+% - 入力トークン数 vs CR の散布図（エージェント別）
+% - breakpoint回帰で飽和閾値を同定
+% - モデル別（GPT-4o-mini vs Haiku）の閾値比較
+
+\subsection{Tracer Survival Analysis}
+% [TODO: Experiment C のデータから]
+% - 各ステップでのトレーサー検出率
+% - 構成別×トレーサー種別のヒートマップ
+% - chain長 vs TSR の相関
+
+\subsection{Predictive Power of Information Metrics}
+% [TODO: 全実験データを統合]
+% - 回帰分析: OQ ~ M1 + M2 + ... + M7
+% - 情報指標 vs 構造指標（次数、経路長）の予測力比較
+% - どの指標が最も品質を予測するか
+
+
+% ============================================================
+\section{Discussion}
+\label{sec:discussion}
+% ============================================================
+
+\subsection{Do LLM Agent Chains Obey the Data Processing Inequality?}
+
+% [TODO: 実験結果に基づく議論]
+% 予想される結論:
+% - Pure relay/compression ステップではDPIが成立（TLでの情報損失）
+% - Augmentation ステップ（CEO, Researcher）ではDPIが破れる
+% - 全体としてはDPIの「修正版」（Eq. 2）が記述的に有効
+% - 重要な知見: 情報の「量」だけでなく「質」が問題。
+%   TLは65%をカットするが、残り35%が適切な情報ならば問題ない。
+%   CFO/CDOが94%をカットするのは、処理しきれない（飽和）ため。
+
+\subsection{Channel Saturation as the Primary Mechanism}
+
+% [TODO: 実験結果に基づく議論]
+% 「なぜ深い階層が悪いか」の最終回答:
+% - 仮説(a) information distortion: 部分的に正しい（TLでの情報損失）
+% - 仮説(b) over-filtering: 部分的に正しい（TLのCR=0.35）
+% - 仮説(c) resource competition: 証拠不十分
+% - 新仮説: ボトルネック原理。深い階層は低容量ノード（TL）を挿入するため、
+%   全体の情報スループットが低下する。
+
+\subsection{Practical Design Guidelines}
+
+% 情報理論に基づく設計原則（Phase 0の経験則を理論的に裏付け）:
+
+% Guideline 1: 最弱リンクを排除せよ
+% - 組織全体の品質は min(C_i) で制約される
+% - 低容量エージェント（小モデルの中間層）を挿入するくらいなら省略した方が良い
+% → flat_hub > anchor の理論的説明
+
+% Guideline 2: 受信側の容量を考慮してトポロジーを選べ
+% - meshは理論的には最適だが、受信側が飽和すれば逆効果
+% - 全エージェントの容量が十分なら mesh > hub > chain
+% - 容量が不均一なら hub（情報集約）+ 高容量ハブが最適
+
+% Guideline 3: 情報増幅ノードはボトルネックにならない
+% - CEO（CR>1）は入力が増えても品質が落ちない（容量が十分な限り）
+% - 設計上、augmentationモードのノードをハブに配置すべき
+
+% [TODO: 上記をフォーマルに記述]
+
+\subsection{Limitations}
+
+% [TODO: 正直に限界を記述]
+% 1. Compression Ratioは情報量の粗い代理指標。トークン数 ≠ 情報量
+% 2. Embedding-based MIは近似。厳密なMI計算は高次元テキストでは困難
+% 3. タスクがビジネス提案のみ。他ドメインへの一般化は未検証
+% 4. モデル3種のみ（Haiku, GPT-4o-mini, Gemini Flash）。他モデルでの検証必要
+% 5. チャネル飽和閾値はモデル×役割×タスク依存。普遍的閾値は存在しない可能性
+% 6. 理論モデルは定性的予測に留まる。定量的予測（「CRが0.3なら品質は2.8」）はまだ不可能
+
+
+% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ============================================================
+
+% [TODO: 実験完了後に記述]
+
+% 主要貢献の要約:
+% 1. LLMマルチエージェント組織を情報処理グラフとしてモデル化する理論的枠組み
+% 2. LLMチャネルの3モード（保存/圧縮/増幅）の発見と特徴づけ
+% 3. チャネル飽和現象の同定 — 「深い階層が悪い」理由の因果的説明
+% 4. ボトルネック原理 — 設計指針の理論的根拠
+% 5. 6つの情報理論的指標による実証検証
+
+% Future work:
+% - Phase 2（動的適応）への接続:
+%   「information processing demand > channel capacity のとき構造を変更すべき」
+%   という理論的トリガーの導出
+% - チャネル容量の事前推定手法（実験なしで飽和閾値を予測する方法）
+
+
+% ============================================================
+% References
+% ============================================================
+
+\bibliographystyle{IEEEtran}
+
+\begin{thebibliography}{20}
+
+\bibitem{wu2023autogen}
+Q.~Wu et al.,
+``AutoGen: Enabling next-gen LLM applications via multi-agent conversation,''
+in \emph{Proc.\ COLM}, 2024.
+
+\bibitem{hong2023metagpt}
+S.~Hong et al.,
+``MetaGPT: Meta programming for a multi-agent collaborative framework,''
+in \emph{Proc.\ ICLR}, 2024.
+
+\bibitem{qian2024chatdev}
+C.~Qian et al.,
+``ChatDev: Communicative agents for software development,''
+in \emph{Proc.\ ACL}, 2024.
+
+\bibitem{qian2025macnet}
+C.~Qian et al.,
+``Scaling large language model-based multi-agent collaboration,''
+in \emph{Proc.\ ICLR}, 2025.
+
+\bibitem{yao2025gdesigner}
+Y.~Yao et al.,
+``G-Designer: Architecting multi-agent communication topologies via graph neural networks,''
+in \emph{Proc.\ ICML}, 2025.
+
+\bibitem{multiagentbench2025}
+% [TODO: 正確な著者情報]
+``MultiAgentBench: Evaluating the collaboration and competition of LLM agents,''
+in \emph{Proc.\ ACL}, 2025.
+
+\bibitem{shinoda2026orgbench}
+K.~Shinoda,
+``OrgBench: How information flow design patterns affect collective decision quality in LLM multi-agent systems,''
+2026. [Manuscript in preparation]
+
+\bibitem{shannon1948}
+C.~E. Shannon,
+``A mathematical theory of communication,''
+\emph{The Bell System Technical Journal}, vol.~27, pp.~379--423, 623--656, 1948.
+
+\bibitem{deletang2024compression}
+G.~Deletang et al.,
+``Language modeling is compression,''
+in \emph{Proc.\ ICLR}, 2024.
+
+\bibitem{galbraith1974designing}
+J.~R. Galbraith,
+``Organization design: An information processing view,''
+\emph{Interfaces}, vol.~4, no.~3, pp.~28--36, 1974.
+
+\bibitem{daft1986organizational}
+R.~L. Daft and R.~H. Lengel,
+``Organizational information requirements, media richness and structural design,''
+\emph{Management Science}, vol.~32, no.~5, pp.~554--571, 1986.
+
+\bibitem{liu2024lost}
+N.~F. Liu et al.,
+``Lost in the middle: How language models use long contexts,''
+\emph{TACL}, 2024.
+
+\bibitem{ton2025cot}
+J.-H.~Ton, M.~Taufiq, and Y.~Liu,
+``Understanding chain-of-thought in LLMs through information theory,''
+in \emph{Proc.\ ICML}, 2025.
+
+\bibitem{nagle2024ratedistortion}
+J.~Nagle et al.,
+``Fundamental limits of prompt compression: A rate-distortion framework for black-box language models,''
+in \emph{Proc.\ NeurIPS}, 2024.
+
+\bibitem{cheng2025mi}
+Z.~Cheng et al.,
+``Quantifying information gain and redundancy in multi-turn LLM interactions,''
+\emph{arXiv preprint}, 2025.
+
+\bibitem{agentprune2025}
+H.~Zhang et al.,
+``AgentPrune: An economical communication pipeline for LLM-based multi-agent systems,''
+in \emph{Proc.\ ICLR}, 2025.
+
+\bibitem{agentdropout2025}
+S.~Wang et al.,
+``AgentDropout: Dynamic agent elimination for token-efficient and high-performance multi-agent communication,''
+in \emph{Proc.\ ACL}, 2025.
+
+\bibitem{shen2025infoprop}
+Y.~Shen et al.,
+``Understanding the information propagation effects of communication topologies in LLM-based multi-agent systems,''
+\emph{arXiv:2505.23352}, 2025.
+
+\bibitem{cemri2025fail}
+M.~Cemri et al.,
+``Why do multi-agent LLM systems fail?''
+in \emph{Proc.\ NeurIPS}, 2025.
+
+\bibitem{malone1987coordination}
+T.~W. Malone,
+``Modeling coordination in organizations and markets,''
+\emph{Management Science}, vol.~33, no.~10, pp.~1317--1332, 1987.
+
+\bibitem{carley2002computational}
+K.~M. Carley,
+``Computational organization science: A new frontier,''
+\emph{PNAS}, vol.~99, suppl.~3, pp.~7257--7262, 2002.
+
+\end{thebibliography}
+
+\end{document}

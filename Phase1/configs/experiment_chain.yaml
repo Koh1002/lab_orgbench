@@ -1,0 +1,22 @@
+# Phase 1 実験B: Chain長変化実験
+# 5構成 × 5テーマ × 3反復 = 75回
+
+phase: phase1_B_chain
+
+templates:
+  - Phase1/configs/templates/chain_2.yaml
+  - Phase1/configs/templates/chain_3.yaml
+  - Phase1/configs/templates/chain_4.yaml
+  - Phase1/configs/templates/chain_5.yaml
+  - Phase1/configs/templates/chain_6.yaml
+
+themes:
+  - ../orgbench/configs/themes/t01_ai_accounting.yaml
+  - ../orgbench/configs/themes/t02_legal_review.yaml
+  - ../orgbench/configs/themes/t03_gov_chatbot.yaml
+  - ../orgbench/configs/themes/t04_elderly_fitness.yaml
+  - ../orgbench/configs/themes/t05_insurance_ai.yaml
+
+replications: 3
+temperature: 0.7
+timeout_sec: 600

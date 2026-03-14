@@ -1,0 +1,36 @@
+name: chain_2
+authority: null
+communication: hub
+review: none
+model_preset: null
+
+agents:
+  - name: ceo
+    role: "最高経営責任者 - 全体統括・最終意思決定"
+    model: "gpt-4o-mini"
+    system_prompt: "あなたは最高経営責任者です。チームメンバーの報告を統合し、最終的なビジネス提案を完成させてください。"
+    tools: []
+
+  - name: writer
+    role: "ライター - ビジネス提案の執筆"
+    model: "gpt-4o-mini"
+    system_prompt: "あなたはライターです。提供された情報を基に、構造化されたビジネス提案書を作成してください。"
+    tools: []
+
+flow:
+  - agent: ceo
+    input_from: null
+    action: "テーマを分析し、Writerへの執筆指示を生成してください"
+    output_to: writer
+
+  - agent: writer
+    input_from: ceo
+    action: "指示を基に、6セクション構成のビジネス提案ドラフトを作成してください"
+    output_to: ceo
+
+  - agent: ceo
+    input_from: __all__
+    action: "全メンバーの報告を統合し、最終的なビジネス提案を完成させてください"
+    output_to: null
+
+max_review_rounds: 1
