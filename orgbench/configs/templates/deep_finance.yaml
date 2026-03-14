@@ -1,0 +1,90 @@
+name: deep_finance
+authority: deep
+communication: hub
+review: finance
+model_preset: hetero
+
+agents:
+  - name: ceo
+    role: "最高経営責任者 - 全体統括"
+    model: "claude-haiku-4-5-20251001"
+    prompt_file: "configs/prompts/ceo.md"
+    manages: [tl]
+    tools: []
+
+  - name: tl
+    role: "テクニカルリード"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/tl.md"
+    reports_to: [ceo]
+    manages: [researcher, writer]
+    tools: []
+
+  - name: researcher
+    role: "リサーチャー"
+    model: "gemini/gemini-2.5-flash"
+    prompt_file: "configs/prompts/researcher.md"
+    reports_to: [tl]
+    tools: [web_search]
+
+  - name: writer
+    role: "ライター"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/writer.md"
+    reports_to: [tl]
+    tools: []
+
+  - name: cfo
+    role: "最高財務責任者 - 財務重点レビュー"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/cfo.md"
+    reports_to: [ceo]
+    has_review_authority_over: [writer, researcher]
+    tools: []
+
+  - name: cdo
+    role: "最高技術責任者"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/cdo.md"
+    reports_to: [ceo]
+    tools: []
+
+flow:
+  - agent: ceo
+    input_from: null
+    action: "テーマを分析し、特に財務面の精査を重視した方針を策定してください"
+    output_to: tl
+
+  - agent: tl
+    input_from: ceo
+    action: "CEOの指示を具体タスクに分解してください"
+    output_to: researcher
+
+  - agent: researcher
+    input_from: tl
+    action: "市場調査・技術調査を実施してください。Web検索を活用してください"
+    output_to: writer
+
+  - agent: writer
+    input_from: researcher
+    action: "調査結果を基にビジネス提案ドラフトを作成してください"
+    output_to: cfo
+
+  # 財務重点: CFOが2回レビュー（初回+深堀り）
+  - agent: cfo
+    input_from: writer
+    action: "ビジネス提案の財務面を徹底的にレビューしてください。収益モデル、コスト構造、損益分岐点の妥当性を特に精査し、「APPROVED」または修正指摘を記載してください"
+    output_to: writer
+    gate: review_gate
+
+  - agent: cdo
+    input_from: writer
+    action: "技術面を簡易レビューしてください。「APPROVED」または修正指摘を記載"
+    output_to: writer
+
+  - agent: ceo
+    input_from: __all__
+    action: "全報告を統合し最終提案を完成させてください"
+    output_to: null
+
+max_review_rounds: 1

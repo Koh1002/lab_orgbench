@@ -1,0 +1,20 @@
+name: single_agent
+authority: null
+communication: null
+review: null
+model_preset: null
+
+agents:
+  - name: single
+    role: "統合エージェント - 全役割を1体で実行"
+    model: "claude-haiku-4-5-20251001"
+    prompt_file: "configs/prompts/single_agent.md"
+    tools: [web_search]
+
+flow:
+  - agent: single
+    input_from: null
+    action: "以下のビジネステーマについて、市場調査→技術分析→財務分析→リスク評価→提案執筆→セルフレビューの順で、6セクション構成のビジネス提案を作成してください"
+    output_to: null
+
+max_review_rounds: 0

@@ -1,0 +1,89 @@
+name: anchor
+authority: deep
+communication: hub
+review: balanced
+model_preset: hetero
+
+agents:
+  - name: ceo
+    role: "最高経営責任者 - 全体統括・最終意思決定"
+    model: "claude-haiku-4-5-20251001"
+    prompt_file: "configs/prompts/ceo.md"
+    manages: [tl]
+    tools: []
+
+  - name: tl
+    role: "テクニカルリード - 調査・執筆の管理"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/tl.md"
+    reports_to: [ceo]
+    manages: [researcher, writer]
+    tools: []
+
+  - name: researcher
+    role: "リサーチャー - 市場調査・技術調査"
+    model: "gemini/gemini-2.5-flash"
+    prompt_file: "configs/prompts/researcher.md"
+    reports_to: [tl]
+    tools: [web_search]
+
+  - name: writer
+    role: "ライター - ビジネス提案の執筆"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/writer.md"
+    reports_to: [tl]
+    tools: []
+
+  - name: cfo
+    role: "最高財務責任者 - 財務レビュー"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/cfo.md"
+    reports_to: [ceo]
+    tools: []
+
+  - name: cdo
+    role: "最高技術責任者 - 技術レビュー"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/cdo.md"
+    reports_to: [ceo]
+    tools: []
+
+flow:
+  - agent: ceo
+    input_from: null
+    action: "テーマを分析し、Researcherへの調査指示とWriterへの執筆指示を生成してください"
+    output_to: tl
+
+  - agent: tl
+    input_from: ceo
+    action: "CEOの指示を具体的な調査タスクと執筆タスクに分解してください"
+    output_to: researcher
+
+  - agent: researcher
+    input_from: tl
+    action: "指示に基づき市場調査・技術調査・競合分析を実施してください。Web検索を活用してください"
+    output_to: writer
+
+  - agent: writer
+    input_from: researcher
+    action: "調査結果を基に、6セクション構成のビジネス提案ドラフトを作成してください"
+    output_to: cfo
+
+  - agent: cfo
+    input_from: writer
+    action: "ビジネス提案の財務面をレビューしてください。問題がなければ「APPROVED」、修正が必要なら具体的な指摘を記載してください"
+    output_to: writer
+    gate: review_gate
+
+  - agent: cdo
+    input_from: writer
+    action: "ビジネス提案の技術面をレビューしてください。問題がなければ「APPROVED」、修正が必要なら具体的な指摘を記載してください"
+    output_to: writer
+    gate: review_gate
+
+  - agent: ceo
+    input_from: __all__
+    action: "全メンバーの報告とレビュー結果を統合し、最終的なビジネス提案を完成させてください"
+    output_to: null
+
+max_review_rounds: 1

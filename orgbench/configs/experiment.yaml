@@ -1,0 +1,26 @@
+# OrgBench パイロット実験設定
+phase: pilot
+
+templates:
+  - configs/templates/anchor.yaml
+  - configs/templates/flat_hub.yaml
+  - configs/templates/matrix_hub.yaml
+  - configs/templates/deep_mesh.yaml
+  - configs/templates/flat_mesh.yaml
+  - configs/templates/deep_finance.yaml
+  - configs/templates/deep_tech.yaml
+  - configs/templates/deep_noreview.yaml
+  - configs/templates/homo_haiku.yaml
+  - configs/templates/homo_gpt.yaml
+  - configs/templates/single_agent.yaml
+
+themes:
+  - configs/themes/t01_ai_accounting.yaml
+  - configs/themes/t02_legal_review.yaml
+  - configs/themes/t03_gov_chatbot.yaml
+  - configs/themes/t04_elderly_fitness.yaml
+  - configs/themes/t05_insurance_ai.yaml
+
+replications: 5
+temperature: 0.7
+timeout_sec: 600

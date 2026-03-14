@@ -1,0 +1,76 @@
+name: flat_mesh
+authority: flat
+communication: mesh
+review: balanced
+model_preset: hetero
+
+agents:
+  - name: ceo
+    role: "コーディネーター - 全体調整"
+    model: "claude-haiku-4-5-20251001"
+    prompt_file: "configs/prompts/ceo.md"
+    peers: [cfo, cdo, researcher, writer]
+    tools: []
+
+  - name: researcher
+    role: "リサーチャー"
+    model: "gemini/gemini-2.5-flash"
+    prompt_file: "configs/prompts/researcher.md"
+    peers: [writer, cfo, cdo, ceo]
+    tools: [web_search]
+
+  - name: writer
+    role: "ライター"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/writer.md"
+    peers: [researcher, cfo, cdo, ceo]
+    tools: []
+
+  - name: cfo
+    role: "財務アドバイザー"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/cfo.md"
+    peers: [cdo, researcher, writer, ceo]
+    tools: []
+
+  - name: cdo
+    role: "技術アドバイザー"
+    model: "gpt-4o-mini"
+    prompt_file: "configs/prompts/cdo.md"
+    peers: [cfo, researcher, writer, ceo]
+    tools: []
+
+flow:
+  - agent: ceo
+    input_from: null
+    action: "テーマを分析し、チームへの方針を提案してください"
+    output_to: researcher
+
+  - agent: researcher
+    input_from: ceo
+    action: "市場調査・技術調査を実施してください。Web検索を活用してください"
+    output_to: writer
+
+  - agent: writer
+    input_from: researcher
+    action: "調査結果を基にビジネス提案ドラフトを作成してください"
+    output_to: cfo
+
+  - agent: cfo
+    input_from: writer
+    action: "財務面をレビューしてください。「APPROVED」または修正指摘を記載"
+    output_to: writer
+    gate: review_gate
+
+  - agent: cdo
+    input_from: writer
+    action: "技術面をレビューしてください。「APPROVED」または修正指摘を記載"
+    output_to: writer
+    gate: review_gate
+
+  - agent: ceo
+    input_from: __all__
+    action: "全メンバーの知見を統合し最終提案を完成させてください"
+    output_to: null
+
+max_review_rounds: 1

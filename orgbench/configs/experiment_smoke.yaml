@@ -1,0 +1,12 @@
+# スモークテスト: 1構成 × 1テーマ × 1反復
+phase: smoke
+
+templates:
+  - configs/templates/single_agent.yaml
+
+themes:
+  - configs/themes/t01_ai_accounting.yaml
+
+replications: 1
+temperature: 0.7
+timeout_sec: 300

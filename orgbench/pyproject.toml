@@ -1,0 +1,22 @@
+[project]
+name = "orgbench"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "litellm>=1.40",
+    "tavily-python>=0.3",
+    "pyyaml>=6.0",
+    "aiofiles>=23.0",
+]
+
+[project.optional-dependencies]
+analysis = [
+    "pandas>=2.0",
+    "scipy>=1.11",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends._legacy:_Backend"
