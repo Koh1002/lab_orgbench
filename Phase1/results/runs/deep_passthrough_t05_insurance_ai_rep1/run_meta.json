@@ -1,0 +1,13 @@
+{
+  "config_name": "deep_passthrough",
+  "theme_id": "t05_insurance_ai",
+  "replication": 1,
+  "total_cost_usd": 0.0368174,
+  "total_duration_sec": 224.50375355399956,
+  "total_llm_calls": 10,
+  "total_input_tokens": 23091,
+  "total_output_tokens": 14974,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-14T23:41:09.672527"
+}

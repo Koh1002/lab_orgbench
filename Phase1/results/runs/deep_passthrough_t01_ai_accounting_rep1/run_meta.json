@@ -1,0 +1,12 @@
+{
+  "config_name": "deep_passthrough",
+  "theme_id": "t01_ai_accounting",
+  "replication": 1,
+  "total_cost_usd": 0.0339234,
+  "total_duration_sec": 165.7149566500011,
+  "total_llm_calls": 8,
+  "total_input_tokens": 17182,
+  "total_output_tokens": 11686,
+  "timeout": false,
+  "error": null
+}

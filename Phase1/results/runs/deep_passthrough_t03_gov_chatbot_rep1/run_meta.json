@@ -1,0 +1,13 @@
+{
+  "config_name": "deep_passthrough",
+  "theme_id": "t03_gov_chatbot",
+  "replication": 1,
+  "total_cost_usd": 0.0390209,
+  "total_duration_sec": 197.10148354800185,
+  "total_llm_calls": 10,
+  "total_input_tokens": 39763,
+  "total_output_tokens": 14351,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-14T23:20:57.338737"
+}

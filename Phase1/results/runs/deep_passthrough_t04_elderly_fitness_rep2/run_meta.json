@@ -1,0 +1,13 @@
+{
+  "config_name": "deep_passthrough",
+  "theme_id": "t04_elderly_fitness",
+  "replication": 2,
+  "total_cost_usd": 0.03724595,
+  "total_duration_sec": 239.78577649599902,
+  "total_llm_calls": 9,
+  "total_input_tokens": 21639,
+  "total_output_tokens": 14772,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-14T23:34:52.542635"
+}
