@@ -688,7 +688,8 @@ Second, the pass-through TL \emph{does not degrade} quality relative to anchor (
 
 However, the depth penalty itself (flat\_hub vs.\ anchor) shows phase-dependent magnitude.
 In Phase~0 (OrgBench), the gap is $\Delta = 0.30$ ($p < 0.05$); in Phase~1, the gap is only $\Delta = -0.04$ (n.s.).
-This instability---likely due to stochastic variation across LLM API calls and judge evaluations ($n = 30$--$48$ per condition)---means the 60/40 decomposition from Phase~0 data should be interpreted cautiously.
+Welch's $t$-tests confirm that the cross-phase differences are not statistically significant (flat\_hub: $t = 1.17$, $p = 0.24$; anchor: $t = -0.93$, $p = 0.35$; flat\_mesh: $t = 0.83$, $p = 0.41$), indicating that the variation is within the expected stochastic range.
+Nevertheless, the H2 decomposition should be interpreted as indicative rather than precise.
 
 \textbf{What is robust}: (1)~TL filtering is harmful (pass-through $\geq$ anchor in both interpretations); (2)~LLM relay steps are inherently lossy (pass-through CR $= 0.93 < 1.0$, meaning $\sim$7\% token loss even with explicit relay instructions); (3)~the depth penalty, when it appears, is partly attributable to TL filtering and partly to channel-intrinsic distortion.
 
@@ -744,12 +745,25 @@ At the CEO's initial step, 7 of 10 tracers survive (TSR $= 0.70$).
 After the TL step, only 2 survive (TSR $= 0.20$)---a single relay step destroys 71\% of the injected tracers.
 Subsequent steps maintain this low level ($\text{TSR} \approx 0.10$), confirming that \textbf{the TL is the primary bottleneck for information preservation}.
 
+The TSR differences are statistically significant: flat\_mesh vs.\ anchor ($t = 4.40$, $p < 0.001$, Cohen's $d = 2.07$), flat\_mesh vs.\ flat\_hub ($t = 3.74$, $p < 0.001$, $d = 1.76$), and flat\_mesh vs.\ chain\_4 ($t = 3.75$, $p < 0.001$, $d = 1.77$).
+All effect sizes are very large ($d > 1.7$).
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig2_tracer_survival.pdf}
 \caption{Tracer Survival Rate (TSR) across agent steps in the anchor configuration. The TL step causes a 71\% drop in tracer survival (from 0.70 to 0.20), identifying the Team Lead as the primary information bottleneck.}
 \label{fig:tracer_survival}
 \end{figure}
+
+\subsection{Numerical Fidelity Confirms Depth-Distortion}
+\label{subsec:nf_result}
+
+Metric M6 (Numerical Fidelity) provides independent confirmation of the depth-distortion finding.
+NF measures the fraction of numerical values in the input that are accurately preserved in the output.
+At the agent level, the TL shows NF $= 0.089$---retaining only 9\% of input numbers, with 91\% lost in a single relay step.
+This is consistent with and independent of the tracer analysis (71\% tracer loss at TL).
+
+At the configuration level, NF decreases monotonically with depth: chain\_2 ($0.98$) $\to$ chain\_3 ($0.73$) $\to$ anchor ($0.36$), confirming that numerical information degrades systematically across relay steps.
 
 \subsection{Topology-Dependent Information Preservation (H4)}
 \label{subsec:h4_result}
@@ -818,7 +832,7 @@ This component is intrinsic to LLM channels and cannot be eliminated by prompt d
 Our findings yield three information-theoretic design principles:
 
 \textbf{Guideline 1: Minimize critical-path depth, or use high-capacity relay agents.}
-Each relay step incurs $\sim$7\% intrinsic information loss ($D_k^{\text{noise}}$).
+Each relay step incurs $\sim$7\% token loss even with explicit relay instructions ($D_k^{\text{noise}}$).
 If an intermediate layer is needed for task decomposition, ensure it uses a high-capacity model (Haiku's TL: CR $= 0.87$ vs.\ GPT-4o-mini's TL: CR $= 0.35$).
 Alternatively, invest in prompt engineering to reduce $D_k^{\text{filter}}$ (the 60\% component).
 
@@ -862,7 +876,7 @@ Through 186 controlled experiments and 372 quality evaluations, we established:
 
 \begin{enumerate}
     \item \textbf{The Depth-Distortion Principle}: Quality decays near-linearly with critical-path depth ($r = -0.996$ for chain depths 2--4), at a rate of $-0.40$ OQ per step.
-    \item \textbf{A dual mechanism for the depth penalty}: intermediate agents' aggressive filtering ($D_k^{\text{filter}}$, addressable via prompt engineering) and depth-intrinsic channel distortion ($D_k^{\text{noise}} \approx 0.07$ per relay step) both contribute, with tracer analysis showing 71\% information loss at the TL step.
+    \item \textbf{A dual mechanism for the depth penalty}: intermediate agents' aggressive filtering ($D_k^{\text{filter}}$, addressable via prompt engineering) and depth-intrinsic channel distortion ($\sim$7\% token loss per relay step) both contribute, with tracer analysis showing 71\% information loss at the TL step.
     \item \textbf{Channel saturation}: When input exceeds agent capacity, compression ratio collapses (CR $= 0.06$), but this is harmful only for critical-path agents.
     \item \textbf{Model capacity eliminates the depth penalty}: High-capacity models (Haiku TL: CR $= 0.87$) make deep hierarchies viable; low-capacity models (GPT-4o-mini TL: CR $= 0.35$) make depth costly.
     \item \textbf{CEO input volume drives quality} ($r = +0.317$): The augmentation-mode CEO benefits from richer input, making mesh topologies advantageous when critical-path agents have sufficient capacity.
