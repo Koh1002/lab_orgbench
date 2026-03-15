@@ -748,6 +748,12 @@ Subsequent steps maintain this low level ($\text{TSR} \approx 0.10$), confirming
 The TSR differences are statistically significant: flat\_mesh vs.\ anchor ($t = 4.40$, $p < 0.001$, Cohen's $d = 2.07$), flat\_mesh vs.\ flat\_hub ($t = 3.74$, $p < 0.001$, $d = 1.76$), and flat\_mesh vs.\ chain\_4 ($t = 3.75$, $p < 0.001$, $d = 1.77$).
 All effect sizes are very large ($d > 1.7$).
 
+Comparing step-by-step TSR between flat\_mesh and anchor reveals \emph{why} mesh preserves more information.
+Both start identically (CEO step: TSR $= 0.70$).
+In anchor, the TL step drops TSR to $0.20$, and it never recovers (final CEO: $0.10$).
+In flat\_mesh (no TL), the Researcher drops TSR to $0.30$, but the Writer \emph{recovers} it to $0.70$---because the Writer receives the CEO's original output (which contains the tracers) directly, without TL filtering.
+The final CEO achieves TSR $= 0.60$ in flat\_mesh vs.\ $0.10$ in anchor: \textbf{a 6$\times$ improvement in information preservation attributable entirely to eliminating the TL bottleneck}.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig2_tracer_survival.pdf}
@@ -783,6 +789,9 @@ M5 (Entity Preservation Rate) shows the same pattern: chain\_2 ($0.91$) $\to$ ch
 
 M3 (Semantic Similarity Decay) reveals an additional phenomenon: the Researcher step produces the largest semantic divergence from the original task prompt (SSD drops from $0.65$ to $0.49$), reflecting the injection of external web search content ($A_k^{\text{tool}}$).
 The subsequent Writer step \emph{recovers} semantic similarity ($0.49 \to 0.70$), restructuring the research findings to align with task requirements---a direct observation of the interplay between augmentation and task-directed compression.
+
+Counterintuitively, final-step SSD and output quality are \emph{negatively} correlated across configurations ($r = -0.73$, $n = 8$): outputs that are semantically \emph{farther} from the task prompt (flat configurations, SSD $\approx 0.65$) achieve higher quality than those closer to it (chain configurations, SSD $\approx 0.73$).
+This indicates that high-quality outputs are not mere paraphrases of the task specification but substantively \emph{enriched} by augmentation---M3 measures transformation, not preservation.
 
 \subsection{Topology-Dependent Information Preservation (H4)}
 \label{subsec:h4_result}
@@ -893,6 +902,14 @@ Next-generation models with longer effective context may exhibit different satur
 \textbf{Scale.}
 Our organizations have 6 agents.
 Information dynamics at $N = 20+$ agents may differ qualitatively (e.g., emergent coordination patterns, combinatorial message explosion).
+
+\textbf{Statistical power.}
+Post-hoc power analysis confirms adequate power ($> 0.94$) for all primary findings (H1, H6, TSR comparisons).
+The exception is the TL CR--quality correlation ($r = +0.169$, power $= 0.54$), which should be interpreted cautiously and requires larger samples for confirmation.
+
+\textbf{Task uncertainty interaction.}
+Preliminary analysis suggests the depth penalty varies with task uncertainty ($-0.46$/step for low-uncertainty vs.\ $-0.25$/step for medium-uncertainty tasks), consistent with Galbraith's contingency theory: when tasks require accurate transmission of known information (low uncertainty), relay distortion is more damaging than when tasks benefit from creative augmentation (high uncertainty).
+This interaction warrants dedicated investigation.
 
 \section{Conclusion}
 \label{sec:conclusion}
