@@ -439,7 +439,7 @@ $A_k^{\text{prior}}$ for augmentation-mode agents (CEO) is an increasing functio
 \label{sec:metrics}
 
 We define seven metrics to quantify information flow through agent organizations.
-We additionally define M2--M6 for comprehensive analysis; in this paper we focus on M1 and M7 as our primary metrics due to their model-free nature.
+We report results for all seven metrics; M1 (CR), M5 (EPR), M6 (NF), and M7 (TSR) serve as primary model-free metrics, while M3 (SSD) provides embedding-based semantic analysis.
 
 \subsection{Token-Level Metrics (Model-Free)}
 
@@ -755,15 +755,34 @@ All effect sizes are very large ($d > 1.7$).
 \label{fig:tracer_survival}
 \end{figure}
 
-\subsection{Numerical Fidelity Confirms Depth-Distortion}
-\label{subsec:nf_result}
+\subsection{Multi-Metric Confirmation of Depth-Distortion}
+\label{subsec:metrics_result}
 
-Metric M6 (Numerical Fidelity) provides independent confirmation of the depth-distortion finding.
-NF measures the fraction of numerical values in the input that are accurately preserved in the output.
-At the agent level, the TL shows NF $= 0.089$---retaining only 9\% of input numbers, with 91\% lost in a single relay step.
-This is consistent with and independent of the tracer analysis (71\% tracer loss at TL).
+Four independent metrics converge on the TL as the primary information bottleneck.
+At the TL step in the anchor configuration:
 
-At the configuration level, NF decreases monotonically with depth: chain\_2 ($0.98$) $\to$ chain\_3 ($0.73$) $\to$ anchor ($0.36$), confirming that numerical information degrades systematically across relay steps.
+\begin{table}[t]
+\centering
+\caption{Information loss at the TL step, measured by four independent metrics. All metrics identify TL as the primary bottleneck.}
+\label{tab:tl_loss}
+\small
+\begin{tabular}{llc}
+\toprule
+\textbf{Metric} & \textbf{Measures} & \textbf{TL Loss} \\
+\midrule
+M7: Tracer Survival & Injected facts preserved & 71\% lost \\
+M6: Numerical Fidelity & Numbers preserved & 91\% lost \\
+M5: Entity Preservation & Named entities preserved & 97\% lost \\
+M1: Compression Ratio & Token volume & 65\% lost \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At the configuration level, M6 (Numerical Fidelity) decreases monotonically with depth: chain\_2 ($0.98$) $\to$ chain\_3 ($0.73$) $\to$ anchor ($0.36$).
+M5 (Entity Preservation Rate) shows the same pattern: chain\_2 ($0.91$) $\to$ chain\_3 ($0.55$) $\to$ anchor ($0.13$).
+
+M3 (Semantic Similarity Decay) reveals an additional phenomenon: the Researcher step produces the largest semantic divergence from the original task prompt (SSD drops from $0.65$ to $0.49$), reflecting the injection of external web search content ($A_k^{\text{tool}}$).
+The subsequent Writer step \emph{recovers} semantic similarity ($0.49 \to 0.70$), restructuring the research findings to align with task requirements---a direct observation of the interplay between augmentation and task-directed compression.
 
 \subsection{Topology-Dependent Information Preservation (H4)}
 \label{subsec:h4_result}
