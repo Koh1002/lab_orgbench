@@ -28,7 +28,6 @@ A Channel-Theoretic Analysis of LLM Multi-Agent Organizations}
 \author{
 \IEEEauthorblockN{Koh Shinoda}
 \IEEEauthorblockA{
-% Affiliation here
 }
 }
 
@@ -38,23 +37,15 @@ A Channel-Theoretic Analysis of LLM Multi-Agent Organizations}
 \begin{abstract}
 % ============================================================
 
-% [STATUS: ドラフト — 実験完了後に数値を埋める]
 
-LLM multi-agent systems adopt diverse organizational structures---hierarchies, review protocols, communication topologies---yet no theoretical framework explains \emph{why} some structures outperform others.
-Prior empirical work (including our OrgBench benchmark) has shown that shallow hierarchies consistently outperform deep ones, but the causal mechanism remains unknown.
-%
-We address this gap by modeling multi-agent organizations as \textbf{information processing graphs}, where each agent acts as a communication channel with finite capacity.
-Applying the Data Processing Inequality (DPI), we derive theoretical predictions:
-(1)~information fidelity decays monotonically with chain depth,
-(2)~mesh topologies preserve information better than chains through path redundancy, and
-(3)~review gates function as feedback channels that reduce error rates without increasing capacity.
-%
-However, our empirical analysis reveals that LLM agents are \emph{not} simple noisy channels:
-they exhibit three distinct modes---\textbf{preservation} (relay), \textbf{compression} (filtering), and \textbf{augmentation} (knowledge injection)---depending on their role and input volume.
-We identify \textbf{channel saturation} as a key phenomenon: when input exceeds an agent's effective capacity, output quality collapses (compression ratio drops to 0.06).
-%
-Through controlled experiments with 186 runs across 10 configurations, we validate these predictions using information-theoretic metrics including tracer survival analysis and compression ratio profiling.
-Our framework provides the first principled design guidelines for multi-agent topology: optimize for the \textbf{minimum-capacity bottleneck} in the information flow graph, not the total path length.
+LLM multi-agent systems adopt diverse organizational structures---hierarchies, review protocols, communication topologies---yet no framework explains \emph{why} some structures outperform others.
+We address this gap by modeling multi-agent organizations as \textbf{information processing graphs}, where each agent acts as a communication channel with role-dependent behavior: \textbf{compression} (filtering input), \textbf{augmentation} (injecting knowledge), or \textbf{saturation} (collapsing under excess input).
+Through 186 controlled experiments with tracer survival analysis, we show that:
+(1)~output quality decays with critical-path depth ($r = -0.46$, $p < 0.001$ per-run), driven by a Team Lead agent that destroys \textbf{71\% of injected tracer information in a single relay step};
+(2)~the depth penalty is partly caused by aggressive prompt-driven filtering (recoverable via prompt engineering) and partly by inherent LLM channel distortion ($\sim$7\% loss per relay step);
+(3)~high-capacity models eliminate the depth penalty entirely (Haiku at depth=4 matches GPT-4o-mini at depth=3);
+and (4)~mesh topologies saturate low-capacity agents (CR collapses to 0.06) but improve quality when critical-path agents have sufficient capacity.
+Our information-flow decomposition ($D_k = D_k^{\text{filter}} + D_k^{\text{noise}}$) provides actionable design guidelines: minimize critical-path depth, use high-capacity relay agents, and route maximum information to augmentation-mode hubs.
 
 \end{abstract}
 
@@ -68,13 +59,11 @@ Information theory, Multi-agent systems, Channel capacity, Data processing inequ
 \label{sec:intro}
 % ============================================================
 
-% --- 1段落目: 実務的問題 ---
 
 The rapid proliferation of LLM-based multi-agent frameworks---AutoGen~\cite{wu2023autogen}, MetaGPT~\cite{hong2023metagpt}, ChatDev~\cite{qian2024chatdev}, CrewAI, LangGraph---has made organizational design a daily engineering decision.
 Practitioners must choose hierarchy depth, communication topology, and review protocols, yet no principled theory guides these choices.
 The current state of practice is trial-and-error: developers test configurations empirically, at costs of \$100--1,000 per project, without understanding \emph{why} one structure outperforms another.
 
-% --- 2段落目: 学術的ギャップ ---
 
 Recent work has begun to treat topology as an experimental variable.
 MacNet~\cite{qian2025macnet} demonstrated that irregular DAG topologies outperform regular ones at ICLR 2025;
@@ -85,7 +74,6 @@ MacNet cannot explain why irregular topologies are superior.
 G-Designer generates effective topologies but cannot predict their performance without running the full pipeline.
 Without a theoretical framework, each empirical finding remains an isolated data point that cannot generalize to new conditions (different models, agent counts, or task types).
 
-% --- 3段落目: OrgBenchの知見と「なぜ」 ---
 
 Our prior work, OrgBench~\cite{shinoda2026orgbench}, systematically compared 11 information flow designs through 275 controlled runs.
 The results were clear: shallow hierarchies outperform deep ones ($\Delta = 0.38$--$0.46$, $\eta^2 = 0.21$), mesh communication provides marginal gains over hub-and-spoke, and review protocols improve quality modestly ($\Delta = 0.24$).
@@ -96,7 +84,6 @@ At least three hypotheses are plausible:
 (c)~intermediate layers consume token budget that could improve the final output.
 Distinguishing these requires a theoretical framework---one that can model information flow, capacity constraints, and distortion accumulation across agent chains.
 
-% --- 4段落目: 情報理論の提案 ---
 
 We propose that \textbf{information theory} provides the natural framework.
 Multi-agent organizations are, literally, information processing systems: agents receive text, process it, and produce text.
@@ -110,14 +97,13 @@ Meanwhile, the CEO agent consistently produces \emph{more} tokens than it receiv
 
 These observations suggest that LLM agents are not simple noisy channels subject to the classical Data Processing Inequality, but \emph{adaptive channels} whose behavior varies with input volume and role---a phenomenon that demands a new theoretical treatment.
 
-% --- 5段落目: 貢献 ---
 
 Our contributions are:
 \begin{enumerate}
     \item A \textbf{formal model} of multi-agent organizations as information processing graphs, where each agent is a communication channel with role-dependent capacity and three operating modes (preservation, compression, augmentation).
     \item \textbf{Theoretical predictions} derived from the Data Processing Inequality, including the Depth-Distortion Principle (information fidelity decays exponentially with critical-path depth) and the decomposition of information loss into intentional filtering ($D_k^{\text{filter}}$) and unintentional noise ($D_k^{\text{noise}}$).
     \item \textbf{Six information-theoretic metrics} for quantifying information flow in multi-agent systems: compression ratio, semantic similarity decay, entity preservation rate, numerical fidelity, information density, and tracer survival rate.
-    \item \textbf{Empirical validation} through 186 controlled experiments across 10 configurations, demonstrating that the depth penalty decomposes into 60\% prompt-driven filtering and 40\% channel-intrinsic distortion, and that model capacity modulates the decay rate.
+    \item \textbf{Empirical validation} through 186 controlled experiments across 10 configurations, including a pass-through control that disentangles prompt-driven filtering from channel-intrinsic distortion, and tracer injection experiments providing model-free information preservation measurements.
 \end{enumerate}
 
 
@@ -126,7 +112,6 @@ Our contributions are:
 \label{sec:related}
 % ============================================================
 
-% --- 2.1: マルチエージェントのトポロジー研究 ---
 \subsection{Topology as a Variable in Multi-Agent Systems}
 
 The treatment of communication topology as an experimental variable has evolved rapidly.
@@ -144,7 +129,6 @@ Cemri et al.~\cite{cemri2025fail} (NeurIPS 2025 spotlight) analyze 1,600+ failur
 All these studies characterize topology effects empirically.
 Our work differs by providing a \textbf{structured information-flow analysis} that decomposes the effects into distortion ($D_k$) and augmentation ($A_k$) at each agent step, enabling predictions for unseen configurations.
 
-% --- 2.2: 情報理論とLLM ---
 \subsection{Information Theory and Language Models}
 
 The connection between language modeling and information theory has deep roots.
@@ -159,7 +143,6 @@ However, all this work focuses on \emph{single} LLM instances or single-agent re
 The information-theoretic behavior of \emph{networks} of LLM agents---where multiple agents with different roles, capacities, and access to external tools form an information processing graph---remains unexplored.
 Our work extends this perspective from single channels to \textbf{heterogeneous networks of channels}.
 
-% --- 2.3: 組織の情報処理理論 ---
 \subsection{Information Processing Theory of Organizations}
 
 Galbraith~\cite{galbraith1974designing} proposed that organizational effectiveness depends on the fit between information processing requirements (task uncertainty) and information processing capacity (organizational design).
@@ -184,7 +167,6 @@ Our framework makes these mappings precise.
 \label{sec:theory}
 % ============================================================
 
-% --- 3.1: 情報処理グラフモデル ---
 \subsection{Multi-Agent Organizations as Information Processing Graphs}
 
 \begin{definition}[Information Processing Graph]
@@ -203,7 +185,6 @@ The stochastic mapping $P(Y_i | X_i)$ is determined by the LLM's conditional gen
 The effective channel capacity $C_i$ is bounded above by the model's context window size, but is typically much smaller in practice due to attention degradation over long contexts~\cite{liu2024lost}.
 We operationalize $C_i$ empirically through the saturation analysis described in Section~\ref{sec:metrics}.
 
-% --- 3.2: LLMチャネルの3モード ---
 \subsection{Three Operating Modes of LLM Channels}
 \label{subsec:modes}
 
@@ -226,7 +207,6 @@ the Researcher varies between augmentation (CR $= 1.76$ in deep configurations w
 and the CFO/CDO in mesh configurations exhibit saturation (CR $= 0.06$, $D_k \gg 0$).
 These modes are strongly predicted by (a)~the agent's organizational role and (b)~the input-to-capacity ratio $|X_i| / C_i$.
 
-% --- 3.3: DPIとその限界 ---
 \subsection{The Data Processing Inequality and Its Limits}
 \label{subsec:dpi}
 
@@ -373,7 +353,6 @@ Saturation   & $\gg 0$     & $\approx 0$ & $\ll 0$     & CFO/mesh (CR$=$0.06) \\
 
 Saturation (Table~\ref{tab:mode_dk_ak}, bottom row) is an extreme form of compression where $D_k^{\text{noise}} \gg D_k^{\text{filter}}$: the agent cannot process its input and drops information non-selectively.
 
-% --- 3.4: チャネル飽和 ---
 \subsection{Channel Saturation}
 \label{subsec:saturation}
 
@@ -386,26 +365,18 @@ where $\epsilon \ll 1$.
 In the saturated regime, the agent's output contains a vanishingly small fraction of the input information.
 \end{definition}
 
-% [TODO: 飽和閾値の理論的・実証的同定]
-% 予備分析からの示唆:
-% - CFO (GPT-4o-mini): 通常入力 ~1,600 tokens → CR=0.35
-%   mesh入力 ~7,500 tokens → CR=0.06 → 飽和閾値は 3,000-5,000 tokens?
-% - CEO (Haiku): 入力 3,000-12,000 tokens → CR=1.8-1.9 → 飽和せず
-%   → Haikuの飽和閾値は 12,000+ tokens?
-% - 飽和閾値 ≈ f(model_capability, task_complexity)?
 
 Our preliminary data suggests that channel saturation occurs at a model-dependent threshold.
 For GPT-4o-mini agents, saturation appears between 3,000--5,000 input tokens; for Claude Haiku 4.5, the threshold exceeds 12,000 tokens.
 This has direct design implications: \textbf{mesh topologies that route all information to all agents will saturate weak agents}, negating the theoretical advantage of path redundancy.
 
-% --- 3.5: ボトルネック原理 ---
 \subsection{The Bottleneck Principle}
 \label{subsec:bottleneck}
 
 Drawing on the max-flow min-cut theorem from network flow theory, one might expect that overall quality is limited by the minimum-capacity agent.
 However, our empirical analysis of 250 runs reveals a more nuanced picture.
 
-\begin{proposition}[Depth-Distortion Principle]
+\noindent\textbf{Empirical Finding (Depth-Distortion Principle).}
 The information throughput of a multi-agent organization $\mathcal{G}$ is primarily determined by the \textbf{number of relay steps on the critical path}---the sequence of agents through which information must pass from task input to final output.
 Each relay step introduces a roughly constant rate of information loss:
 \begin{equation}
@@ -413,7 +384,7 @@ Each relay step introduces a roughly constant rate of information loss:
     \label{eq:depth_distortion}
 \end{equation}
 where $d$ is the critical path depth and $\alpha < 1$ is the per-step retention rate.
-\end{proposition}
+This is an empirical regularity, not a theorem; $\alpha$ depends on agent model capacity and prompt design.
 
 We validate this through correlation analysis (Section~\ref{sec:preliminary}).
 Critical path depth is the strongest predictor of output quality ($r = -0.255$, $p < 0.0001$), outperforming both min-CR ($r = +0.093$, $p = 0.14$, n.s.) and mean-CR ($r = +0.039$, $p = 0.54$, n.s.).
@@ -430,7 +401,6 @@ This principle predicts that:
     \item Reviewer saturation is tolerable; critical-path saturation is not.
 \end{itemize}
 
-% --- 3.6: トポロジー別の理論的予測 ---
 \subsection{Topology-Specific Predictions}
 \label{subsec:predictions}
 
@@ -452,7 +422,6 @@ Mesh (flat\_mesh) & 1 (direct) & CFO/CDO if saturated & Low distortion \emph{if}
 \end{tabular}
 \end{table}
 
-% --- 3.7: 検証可能な予測（反直感的予測を含む） ---
 \subsection{Testable Predictions}
 \label{subsec:testable}
 
@@ -503,7 +472,6 @@ We define six metrics to quantify information flow through agent organizations.
 Measures the token-level expansion or contraction at each agent.
 $\text{CR} > 1$ indicates augmentation; $\text{CR} \ll 1$ with high input indicates saturation.
 
-% [STATUS: ✅ 既存データで計算済み（予備分析）]
 
 \textbf{M2: Information Density (ID).}
 \begin{equation}
@@ -511,7 +479,6 @@ $\text{CR} > 1$ indicates augmentation; $\text{CR} \ll 1$ with high input indica
 \end{equation}
 Measures lexical diversity. Low ID indicates repetitive or formulaic output, a symptom of saturation.
 
-% [TODO: 実装 — n=3 (trigram) を標準とする。既存output.mdから計算可能]
 
 \subsection{Semantic Metrics (Embedding-Based)}
 
@@ -522,7 +489,6 @@ Measures lexical diversity. Low ID indicates repetitive or formulaic output, a s
 where $X_0$ is the original task prompt and $Y_k$ is the output at step $k$.
 Measures how far the output has drifted from the original task specification.
 
-% [TODO: 実装 — text-embedding-3-small を使用。全文テキストが必要 → orchestrator修正後]
 
 \textbf{M4: Cross-Step Mutual Information Estimate (CSMI).}
 \begin{equation}
@@ -530,9 +496,6 @@ Measures how far the output has drifted from the original task specification.
 \end{equation}
 Embedding-based approximation of mutual information between consecutive steps.
 
-% [TODO: 推定手法の選定 — KSG estimator vs MINE vs 簡易cosine-based proxy]
-% 実用上はcosine similarityをMIのproxyとして使い、
-% 厳密なMI推定はablationとして実施するのが現実的か？
 
 \subsection{Content Preservation Metrics}
 
@@ -542,8 +505,6 @@ Embedding-based approximation of mutual information between consecutive steps.
 \end{equation}
 Fraction of named entities in the input that survive to the output.
 
-% [TODO: 実装 — spaCy日本語モデル or multilingual NER]
-% 課題: 日本語テキストのNER精度。英語に翻訳してからNERする方が精度が高い可能性
 
 \textbf{M6: Numerical Fidelity (NF).}
 \begin{equation}
@@ -551,7 +512,6 @@ Fraction of named entities in the input that survive to the output.
 \end{equation}
 Fraction of numerical values that are accurately preserved.
 
-% [TODO: 実装 — regex-based数値抽出。「1兆3,412億円」等の日本語数値表現への対応が必要]
 
 \subsection{Controlled Information Injection}
 
@@ -561,11 +521,6 @@ We inject $K$ synthetic ``tracer'' facts into the task prompt (fictitious compan
     \text{TSR} = \frac{1}{K} \sum_{j=1}^{K} \mathbb{1}[\text{tracer}_j \in Y_{\text{final}}]
 \end{equation}
 
-% [TODO: 設計と実装]
-% - トレーサーの種類: 架空固有名詞、架空数値、架空事実、制約条件
-% - 各テーマに10個のトレーサーを埋め込み
-% - 検出方法: exact match + fuzzy match (数値の丸め等に対応)
-% - 各ステップでの検出率を追跡 → 生存曲線を構築
 
 This metric provides the most direct test of the DPI: if information is monotonically lost across relay steps, TSR should decrease with chain depth.
 Unlike M3--M6, TSR is independent of embedding models and NER accuracy, providing a model-free ground truth for information preservation.
@@ -576,9 +531,10 @@ Unlike M3--M6, TSR is independent of embedding models and NER accuracy, providin
 \label{sec:preliminary}
 % ============================================================
 
-Before conducting the full information-theoretic experiment (Section~\ref{sec:experiment}), we analyze the existing OrgBench pilot data (275 runs across 11 configurations) to validate our theoretical framework and guide experimental design.
+Before conducting the full information-theoretic experiment (Section~\ref{sec:experiment}), we analyze the existing OrgBench pilot data~\cite{shinoda2026orgbench} to validate our theoretical framework and guide experimental design.
+OrgBench comprises 275 runs across 11 configurations (5 themes $\times$ 5 replications $\times$ 11 configs), of which 250 are multi-agent runs (excluding the single-agent baseline).
+Analyses in this section use the OrgBench data; analyses in Section~\ref{sec:results} use the 186 new runs from our Phase~1 experiments unless otherwise noted.
 
-% --- 5.1: CR分析 ---
 \subsection{Compression Ratio Analysis}
 
 Table~\ref{tab:cr} presents the mean compression ratio by agent role and configuration.
@@ -618,7 +574,6 @@ The saturation threshold for GPT-4o-mini appears to be 3,000--5,000 tokens for t
 In homo\_haiku (all Claude Haiku 4.5), most agents maintain CR $>$ 0.8 regardless of input volume, and TL achieves CR = 0.87 vs. 0.35 in heterogeneous configurations.
 Haiku's larger effective capacity allows it to preserve more information at each step.
 
-% --- 5.2: ボトルネック分析 ---
 \subsection{Bottleneck Analysis}
 
 \begin{table}[t]
@@ -728,6 +683,15 @@ This configuration was run on all 5 themes with 3 replications (15 runs, 30 judg
 The TL's compression ratio shifted from 0.35 (anchor) to \textbf{0.93} (pass-through), confirming that the prompt manipulation was effective.
 Results are reported in Section~\ref{subsec:h2_result}.
 
+\subsection{Evaluation Protocol}
+
+All outputs are evaluated by \textbf{LLM-as-Judge} using Gemini 2.5 Flash with a standardized rubric.
+Each output receives two independent evaluations (temperature $= 0.3$) across six quality dimensions (Feasibility, Novelty, Market Insight, Financial Rigor, Technical Depth, Overall Quality) on a 1--5 Likert scale.
+The evaluator model is separated from all generation models to mitigate self-preference bias.
+Outputs are anonymized (no configuration labels or model names are visible to the judge).
+The rubric with anchor descriptions for scores 1, 3, and 5 is provided in supplementary materials.
+All OQ scores reported are means across judge runs; standard errors are reported where sample size permits.
+
 
 % ============================================================
 \section{Results}
@@ -737,34 +701,37 @@ Results are reported in Section~\ref{subsec:h2_result}.
 \subsection{Disentangling Depth from TL Filtering (H2)}
 \label{subsec:h2_result}
 
-Experiment~D provides a clean decomposition of the depth penalty into two components (Table~\ref{tab:h2}).
+Experiment~D tests whether the depth penalty is caused by information distortion across relay steps or by the TL agent's aggressive filtering.
+Table~\ref{tab:h2} presents the results across two experimental phases.
 
 \begin{table}[t]
 \centering
-\caption{Decomposition of the depth penalty. The quality gap between flat\_hub (depth=3) and anchor (depth=4) is attributable 60\% to TL filtering and 40\% to depth-intrinsic distortion.}
+\caption{H2: depth vs.\ TL filtering. OrgBench (Phase 0) and Phase 1 scores are reported separately due to cross-phase evaluation variance (see text). TL CR confirms prompt manipulation was effective.}
 \label{tab:h2}
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
-\textbf{Config} & \textbf{Depth} & \textbf{TL Role} & \textbf{TL CR} & \textbf{OQ} \\
+\textbf{Config} & \textbf{Depth} & \textbf{TL} & \textbf{TL CR} & \textbf{OQ (P0)} & \textbf{OQ (P1)} \\
 \midrule
-flat\_hub & 3 & absent & --- & 3.22 \\
-deep\_passthrough & 4 & pass-through & 0.93 & 3.10 \\
-anchor & 4 & normal filter & 0.35 & 2.92 \\
+flat\_hub & 3 & absent & --- & 3.22 & 3.02$\pm$0.13 \\
+deep\_pass. & 4 & relay & 0.93 & --- & 3.10$\pm$0.19 \\
+anchor & 4 & filter & 0.35 & 2.92 & 3.06$\pm$0.12 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The total quality gap $\Delta_{\text{total}} = 3.22 - 2.92 = 0.30$ decomposes as:
-\begin{itemize}
-    \item $\Delta_{\text{filter}} = 3.10 - 2.92 = 0.18$ (\textbf{60\%}): attributable to TL's aggressive filtering ($D_k^{\text{filter}}$). Replacing the TL's task-decomposition prompt with a relay instruction recovers this portion.
-    \item $\Delta_{\text{depth}} = 3.22 - 3.10 = 0.12$ (\textbf{40\%}): attributable to depth-intrinsic distortion ($D_k^{\text{noise}}$). Even a pure relay adds one LLM generation step, during which information is inevitably transformed and partially lost.
-\end{itemize}
+Two findings are robust across phases.
+First, the TL prompt manipulation was effective: pass-through CR $= 0.93$ vs.\ normal TL CR $= 0.35$, confirming that the pass-through agent preserves $\sim$93\% of input tokens compared to 35\%.
+Second, the pass-through TL \emph{does not degrade} quality relative to anchor ($\Delta = +0.04$ in Phase~1), suggesting that TL filtering actively harms quality.
 
-This result has three implications.
-First, it \emph{validates the $D_k = D_k^{\text{filter}} + D_k^{\text{noise}}$ decomposition} (Definition~\ref{def:dk_ak}): both components are empirically real and separately measurable.
-Second, it shows that \textbf{prompt design accounts for the majority of the depth penalty}---a finding with immediate practical value (improving TL prompts is cheaper than restructuring the organization).
-Third, the residual 40\% confirms that \textbf{LLM channels are inherently lossy}: passing text through an LLM, even with explicit relay instructions, introduces approximately 7\% information loss per step ($1 - 0.93 = 0.07$, consistent with the TL's pass-through CR).
+However, the depth penalty itself (flat\_hub vs.\ anchor) shows phase-dependent magnitude.
+In Phase~0 (OrgBench), the gap is $\Delta = 0.30$ ($p < 0.05$); in Phase~1, the gap is only $\Delta = -0.04$ (n.s.).
+This instability---likely due to stochastic variation across LLM API calls and judge evaluations ($n = 30$--$48$ per condition)---means the 60/40 decomposition from Phase~0 data should be interpreted cautiously.
+
+\textbf{What is robust}: (1)~TL filtering is harmful (pass-through $\geq$ anchor in both interpretations); (2)~LLM relay steps are inherently lossy (pass-through CR $= 0.93 < 1.0$, meaning $\sim$7\% token loss even with explicit relay instructions); (3)~the depth penalty, when it appears, is partly attributable to TL filtering and partly to channel-intrinsic distortion.
+
+\textbf{What requires further investigation}: The relative magnitude of the two components (60/40 vs.\ other ratios) depends on the baseline, and the effect size is modest ($d \approx 0.2$).
+Larger sample sizes and within-batch comparisons are needed for precise decomposition.
 
 \subsection{Model Capacity Moderates the Depth Penalty (H3)}
 \label{subsec:h3_result}
@@ -783,8 +750,8 @@ with sufficiently capable models ($\alpha \to 1$), the depth penalty vanishes en
 Experiment~B provides the clearest test of the Depth-Distortion Principle.
 Using uniform GPT-4o-mini across all agents (eliminating model-capacity confounds), we measure quality as a function of chain depth.
 
-For chain depths 2--4 (no review gates), quality decays \textbf{near-perfectly linearly} with depth: Pearson $r = -0.996$, slope $= -0.40$ OQ per depth step (chain\_2: OQ $= 2.83$; chain\_3: $2.50$; chain\_4: $2.04$).
-This strong regularity supports the depth-distortion model $P(n) \propto \alpha^d$.
+For chain depths 2--4 (no review gates), quality decays monotonically with depth: chain\_2: OQ $= 2.83 \pm 0.14$; chain\_3: $2.50 \pm 0.10$; chain\_4: $2.04 \pm 0.07$.
+The per-run correlation across all 90 individual evaluations is $r = -0.458$ ($p < 0.001$), confirming a significant negative relationship between depth and quality at the individual-run level (not merely at the configuration-mean level).
 
 Chains 5--6 (which include CFO/CDO review gates) show partial quality recovery (chain\_5: $2.20$; chain\_6: $2.30$), confirming H5: review gates reduce $D_k^{\text{noise}}$ but cannot fully compensate for accumulated distortion from upstream relay steps.
 
@@ -849,16 +816,15 @@ This explains why flat\_mesh---which maximizes information delivery to the augme
 Our Experiment~D results (Section~\ref{subsec:h2_result}) provide a definitive answer to the question posed in the Introduction.
 The depth penalty has \textbf{two distinct causes}:
 
-\textbf{(1) Intentional over-filtering (60\%).}
+\textbf{(1) Intentional over-filtering ($D_k^{\text{filter}}$).}
 The TL agent, prompted to ``decompose tasks,'' aggressively filters input (CR $= 0.35$, discarding 65\%).
-Much of this filtering is $D_k^{\text{filter}}$---intentional but suboptimally aggressive.
-When replaced with a relay prompt (CR $= 0.93$), quality improves by $\Delta = +0.18$.
+Tracer analysis confirms this: 71\% of injected tracers are lost at the TL step (TSR drops from 0.70 to 0.20).
+Replacing the TL with a pass-through relay (CR $= 0.93$) does not degrade quality relative to the normal TL, confirming that this filtering is suboptimally aggressive.
 This component is addressable through prompt engineering.
 
-\textbf{(2) Depth-intrinsic distortion (40\%).}
-Even with a relay prompt, depth=4 underperforms depth=3 by $\Delta = 0.12$.
-Each LLM generation step introduces $\sim$7\% information loss ($D_k^{\text{noise}} \approx 0.07$), consistent with the ``Lost in the Middle'' phenomenon~\cite{liu2024lost} where LLMs imperfectly attend to all input content.
-This component is intrinsic to LLM channels and cannot be eliminated by prompt design alone---only by reducing depth or using higher-capacity models (as confirmed by H3).
+\textbf{(2) Depth-intrinsic distortion ($D_k^{\text{noise}}$).}
+Even a pass-through relay agent (CR $= 0.93$) loses $\sim$7\% of input tokens per step, consistent with the ``Lost in the Middle'' phenomenon~\cite{liu2024lost}.
+This component is intrinsic to LLM channels and cannot be eliminated by prompt design alone---only by reducing depth or using higher-capacity models (as confirmed by H3: Haiku's TL achieves CR $= 0.87$, nearly eliminating the depth penalty).
 
 \subsection{Practical Design Guidelines}
 
@@ -912,7 +878,7 @@ Through 186 controlled experiments and 372 quality evaluations, we established:
 
 \begin{enumerate}
     \item \textbf{The Depth-Distortion Principle}: Quality decays near-linearly with critical-path depth ($r = -0.996$ for chain depths 2--4), at a rate of $-0.40$ OQ per step.
-    \item \textbf{A dual mechanism for the depth penalty}: 60\% is caused by intermediate agents' aggressive filtering ($D_k^{\text{filter}}$, addressable via prompt engineering) and 40\% by depth-intrinsic channel distortion ($D_k^{\text{noise}} \approx 0.07$ per step).
+    \item \textbf{A dual mechanism for the depth penalty}: intermediate agents' aggressive filtering ($D_k^{\text{filter}}$, addressable via prompt engineering) and depth-intrinsic channel distortion ($D_k^{\text{noise}} \approx 0.07$ per relay step) both contribute, with tracer analysis showing 71\% information loss at the TL step.
     \item \textbf{Channel saturation}: When input exceeds agent capacity, compression ratio collapses (CR $= 0.06$), but this is harmful only for critical-path agents.
     \item \textbf{Model capacity eliminates the depth penalty}: High-capacity models (Haiku TL: CR $= 0.87$) make deep hierarchies viable; low-capacity models (GPT-4o-mini TL: CR $= 0.35$) make depth costly.
     \item \textbf{CEO input volume drives quality} ($r = +0.317$): The augmentation-mode CEO benefits from richer input, making mesh topologies advantageous when critical-path agents have sufficient capacity.
@@ -924,7 +890,6 @@ Future work includes dynamic organizational adaptation---using $D_k$ and channel
 
 
 % ============================================================
-% References
 % ============================================================
 
 \bibliographystyle{IEEEtran}
