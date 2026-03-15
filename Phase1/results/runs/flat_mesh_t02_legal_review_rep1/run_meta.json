@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_mesh",
+  "theme_id": "t02_legal_review",
+  "replication": 1,
+  "total_cost_usd": 0.03735085,
+  "total_duration_sec": 89.1672714929955,
+  "total_llm_calls": 6,
+  "total_input_tokens": 33600,
+  "total_output_tokens": 9017,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:25:54.673763"
+}

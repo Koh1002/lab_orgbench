@@ -1,0 +1,13 @@
+{
+  "config_name": "chain_5",
+  "theme_id": "t02_legal_review",
+  "replication": 3,
+  "total_cost_usd": 0.00676545,
+  "total_duration_sec": 104.9972519399962,
+  "total_llm_calls": 7,
+  "total_input_tokens": 21011,
+  "total_output_tokens": 6023,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:26:12.832963"
+}

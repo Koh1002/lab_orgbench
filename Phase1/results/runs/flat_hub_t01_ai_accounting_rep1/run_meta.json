@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_hub",
+  "theme_id": "t01_ai_accounting",
+  "replication": 1,
+  "total_cost_usd": 0.0303032,
+  "total_duration_sec": 88.98000116400362,
+  "total_llm_calls": 7,
+  "total_input_tokens": 14120,
+  "total_output_tokens": 9475,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:51:42.318372"
+}

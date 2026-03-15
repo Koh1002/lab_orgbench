@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_hub",
+  "theme_id": "t01_tracer",
+  "replication": 2,
+  "total_cost_usd": 0.030314599999999997,
+  "total_duration_sec": 87.37711175599543,
+  "total_llm_calls": 7,
+  "total_input_tokens": 18074,
+  "total_output_tokens": 9704,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:41:54.961452"
+}

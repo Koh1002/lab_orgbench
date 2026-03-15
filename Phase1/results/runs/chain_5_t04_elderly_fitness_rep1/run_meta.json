@@ -1,0 +1,13 @@
+{
+  "config_name": "chain_5",
+  "theme_id": "t04_elderly_fitness",
+  "replication": 1,
+  "total_cost_usd": 0.0050844,
+  "total_duration_sec": 79.9732256770003,
+  "total_llm_calls": 7,
+  "total_input_tokens": 12840,
+  "total_output_tokens": 5264,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:33:11.989794"
+}

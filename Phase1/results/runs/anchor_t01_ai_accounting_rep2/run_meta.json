@@ -1,0 +1,13 @@
+{
+  "config_name": "anchor",
+  "theme_id": "t01_ai_accounting",
+  "replication": 2,
+  "total_cost_usd": 0.0455928,
+  "total_duration_sec": 173.16267573300138,
+  "total_llm_calls": 11,
+  "total_input_tokens": 48914,
+  "total_output_tokens": 14022,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:22:35.565214"
+}

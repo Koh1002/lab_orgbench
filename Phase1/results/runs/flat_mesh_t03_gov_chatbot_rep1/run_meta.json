@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_mesh",
+  "theme_id": "t03_gov_chatbot",
+  "replication": 1,
+  "total_cost_usd": 0.038592800000000003,
+  "total_duration_sec": 138.02794371300115,
+  "total_llm_calls": 8,
+  "total_input_tokens": 33447,
+  "total_output_tokens": 12454,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:33:01.297829"
+}

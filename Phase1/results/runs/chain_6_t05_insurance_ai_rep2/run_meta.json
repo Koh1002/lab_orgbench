@@ -1,0 +1,13 @@
+{
+  "config_name": "chain_6",
+  "theme_id": "t05_insurance_ai",
+  "replication": 2,
+  "total_cost_usd": 0.006363,
+  "total_duration_sec": 104.66566363900347,
+  "total_llm_calls": 9,
+  "total_input_tokens": 15812,
+  "total_output_tokens": 6652,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T10:07:28.924637"
+}

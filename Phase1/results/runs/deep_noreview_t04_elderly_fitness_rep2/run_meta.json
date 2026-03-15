@@ -1,0 +1,13 @@
+{
+  "config_name": "deep_noreview",
+  "theme_id": "t04_elderly_fitness",
+  "replication": 2,
+  "total_cost_usd": 0.02985655,
+  "total_duration_sec": 72.69417812599568,
+  "total_llm_calls": 5,
+  "total_input_tokens": 11344,
+  "total_output_tokens": 8304,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:59:44.831150"
+}

@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_mesh",
+  "theme_id": "t04_elderly_fitness",
+  "replication": 1,
+  "total_cost_usd": 0.03848995,
+  "total_duration_sec": 91.05152189300134,
+  "total_llm_calls": 8,
+  "total_input_tokens": 44092,
+  "total_output_tokens": 8437,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:38:14.037913"
+}

@@ -1,0 +1,13 @@
+{
+  "config_name": "anchor",
+  "theme_id": "t05_tracer",
+  "replication": 2,
+  "total_cost_usd": 0.03284965,
+  "total_duration_sec": 121.79304329500155,
+  "total_llm_calls": 8,
+  "total_input_tokens": 17627,
+  "total_output_tokens": 10468,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:36:39.441334"
+}

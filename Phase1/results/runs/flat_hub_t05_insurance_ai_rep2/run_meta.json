@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_hub",
+  "theme_id": "t05_insurance_ai",
+  "replication": 2,
+  "total_cost_usd": 0.03254565,
+  "total_duration_sec": 106.26527324899507,
+  "total_llm_calls": 8,
+  "total_input_tokens": 19069,
+  "total_output_tokens": 11162,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:16:56.372223"
+}

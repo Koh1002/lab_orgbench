@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_hub",
+  "theme_id": "t04_elderly_fitness",
+  "replication": 3,
+  "total_cost_usd": 0.03054395,
+  "total_duration_sec": 94.51191709499835,
+  "total_llm_calls": 7,
+  "total_input_tokens": 14414,
+  "total_output_tokens": 9501,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:13:34.586133"
+}

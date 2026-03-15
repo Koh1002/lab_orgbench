@@ -1,0 +1,13 @@
+{
+  "config_name": "anchor",
+  "theme_id": "t03_gov_chatbot",
+  "replication": 2,
+  "total_cost_usd": 0.0343528,
+  "total_duration_sec": 133.17702728699805,
+  "total_llm_calls": 11,
+  "total_input_tokens": 24697,
+  "total_output_tokens": 10921,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:36:40.904700"
+}

@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_mesh",
+  "theme_id": "t05_insurance_ai",
+  "replication": 3,
+  "total_cost_usd": 0.0389234,
+  "total_duration_sec": 84.74141278100433,
+  "total_llm_calls": 6,
+  "total_input_tokens": 37396,
+  "total_output_tokens": 8860,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:46:30.492117"
+}

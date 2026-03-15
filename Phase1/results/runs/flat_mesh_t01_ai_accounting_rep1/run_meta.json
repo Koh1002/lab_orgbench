@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_mesh",
+  "theme_id": "t01_ai_accounting",
+  "replication": 1,
+  "total_cost_usd": 0.0386282,
+  "total_duration_sec": 147.825585200997,
+  "total_llm_calls": 10,
+  "total_input_tokens": 45385,
+  "total_output_tokens": 14977,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:21:34.792368"
+}

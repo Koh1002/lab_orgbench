@@ -1,0 +1,13 @@
+{
+  "config_name": "deep_noreview",
+  "theme_id": "t05_insurance_ai",
+  "replication": 1,
+  "total_cost_usd": 0.0299629,
+  "total_duration_sec": 79.50147913600085,
+  "total_llm_calls": 5,
+  "total_input_tokens": 11483,
+  "total_output_tokens": 8455,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T10:02:26.760096"
+}

@@ -1,0 +1,13 @@
+{
+  "config_name": "anchor",
+  "theme_id": "t02_legal_review",
+  "replication": 1,
+  "total_cost_usd": 0.03307855,
+  "total_duration_sec": 156.73772919300245,
+  "total_llm_calls": 11,
+  "total_input_tokens": 23831,
+  "total_output_tokens": 10514,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:27:17.925882"
+}

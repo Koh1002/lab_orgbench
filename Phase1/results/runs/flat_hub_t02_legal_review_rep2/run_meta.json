@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_hub",
+  "theme_id": "t02_legal_review",
+  "replication": 2,
+  "total_cost_usd": 0.03133065,
+  "total_duration_sec": 103.42514415000187,
+  "total_llm_calls": 7,
+  "total_input_tokens": 15513,
+  "total_output_tokens": 10043,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:58:57.020529"
+}

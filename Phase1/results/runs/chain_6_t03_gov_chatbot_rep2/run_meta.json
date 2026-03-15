@@ -1,0 +1,13 @@
+{
+  "config_name": "chain_6",
+  "theme_id": "t03_gov_chatbot",
+  "replication": 2,
+  "total_cost_usd": 0.00943035,
+  "total_duration_sec": 154.7332990549985,
+  "total_llm_calls": 8,
+  "total_input_tokens": 33093,
+  "total_output_tokens": 7444,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:55:50.549626"
+}

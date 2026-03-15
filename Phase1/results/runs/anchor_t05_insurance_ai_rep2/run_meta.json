@@ -1,0 +1,13 @@
+{
+  "config_name": "anchor",
+  "theme_id": "t05_insurance_ai",
+  "replication": 2,
+  "total_cost_usd": 0.03531445,
+  "total_duration_sec": 129.94642220000242,
+  "total_llm_calls": 9,
+  "total_input_tokens": 21199,
+  "total_output_tokens": 11881,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:48:33.316312"
+}

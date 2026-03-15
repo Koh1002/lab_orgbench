@@ -1,0 +1,13 @@
+{
+  "config_name": "deep_noreview",
+  "theme_id": "t02_legal_review",
+  "replication": 2,
+  "total_cost_usd": 0.02782325,
+  "total_duration_sec": 66.91356300000189,
+  "total_llm_calls": 5,
+  "total_input_tokens": 8801,
+  "total_output_tokens": 7309,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:52:05.403126"
+}

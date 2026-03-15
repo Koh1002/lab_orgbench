@@ -1,0 +1,13 @@
+{
+  "config_name": "anchor",
+  "theme_id": "t04_elderly_fitness",
+  "replication": 1,
+  "total_cost_usd": 0.03305455,
+  "total_duration_sec": 116.73734154699923,
+  "total_llm_calls": 8,
+  "total_input_tokens": 17840,
+  "total_output_tokens": 10735,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T08:40:33.257300"
+}

@@ -1,0 +1,13 @@
+{
+  "config_name": "deep_noreview",
+  "theme_id": "t03_gov_chatbot",
+  "replication": 3,
+  "total_cost_usd": 0.03228295,
+  "total_duration_sec": 82.93117564899876,
+  "total_llm_calls": 7,
+  "total_input_tokens": 24198,
+  "total_output_tokens": 8174,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:57:22.461914"
+}

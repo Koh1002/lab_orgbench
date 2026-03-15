@@ -1,0 +1,13 @@
+{
+  "config_name": "chain_5",
+  "theme_id": "t01_ai_accounting",
+  "replication": 3,
+  "total_cost_usd": 0.006222149999999999,
+  "total_duration_sec": 102.40840926099918,
+  "total_llm_calls": 7,
+  "total_input_tokens": 15825,
+  "total_output_tokens": 6414,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:21:25.327167"
+}

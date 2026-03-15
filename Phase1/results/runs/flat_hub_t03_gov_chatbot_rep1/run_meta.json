@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_hub",
+  "theme_id": "t03_gov_chatbot",
+  "replication": 1,
+  "total_cost_usd": 0.0330165,
+  "total_duration_sec": 136.47121996600617,
+  "total_llm_calls": 8,
+  "total_input_tokens": 17679,
+  "total_output_tokens": 12069,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:03:12.155608"
+}

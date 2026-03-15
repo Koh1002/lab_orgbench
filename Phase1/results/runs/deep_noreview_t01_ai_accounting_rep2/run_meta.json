@@ -1,0 +1,13 @@
+{
+  "config_name": "deep_noreview",
+  "theme_id": "t01_ai_accounting",
+  "replication": 2,
+  "total_cost_usd": 0.0284961,
+  "total_duration_sec": 69.31416481599445,
+  "total_llm_calls": 5,
+  "total_input_tokens": 9739,
+  "total_output_tokens": 6758,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:48:43.564968"
+}

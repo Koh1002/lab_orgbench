@@ -1,0 +1,13 @@
+{
+  "config_name": "flat_mesh",
+  "theme_id": "t05_tracer",
+  "replication": 1,
+  "total_cost_usd": 0.039301249999999996,
+  "total_duration_sec": 107.89456862599764,
+  "total_llm_calls": 6,
+  "total_input_tokens": 37607,
+  "total_output_tokens": 8842,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:08:31.060739"
+}

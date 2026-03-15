@@ -1,0 +1,13 @@
+{
+  "config_name": "chain_4",
+  "theme_id": "t03_tracer",
+  "replication": 1,
+  "total_cost_usd": 0.0055809,
+  "total_duration_sec": 92.90763901100581,
+  "total_llm_calls": 6,
+  "total_input_tokens": 17882,
+  "total_output_tokens": 4831,
+  "timeout": false,
+  "error": null,
+  "timestamp": "2026-03-15T09:18:47.172127"
+}
