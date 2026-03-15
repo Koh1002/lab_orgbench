@@ -87,7 +87,7 @@ Our contributions are:
 \begin{enumerate}
     \item A \textbf{formal model} of multi-agent organizations as information processing graphs, where each agent is a communication channel with role-dependent capacity and three operating modes (preservation, compression, augmentation).
     \item \textbf{Theoretical predictions} derived from the Data Processing Inequality, including the Depth-Distortion Principle (information fidelity decays exponentially with critical-path depth) and the decomposition of information loss into intentional filtering ($D_k^{\text{filter}}$) and unintentional noise ($D_k^{\text{noise}}$).
-    \item \textbf{Six information-theoretic metrics} for quantifying information flow in multi-agent systems: compression ratio, semantic similarity decay, entity preservation rate, numerical fidelity, information density, and tracer survival rate.
+    \item \textbf{Seven information-theoretic metrics} for quantifying information flow in multi-agent systems: compression ratio, semantic similarity decay, entity preservation rate, numerical fidelity, information density, and tracer survival rate.
     \item \textbf{Empirical validation} through 186 controlled experiments across 10 configurations, including a pass-through control that disentangles prompt-driven filtering from channel-intrinsic distortion, and tracer injection experiments providing model-free information preservation measurements.
 \end{enumerate}
 
@@ -617,9 +617,9 @@ Table~\ref{tab:experiments} summarizes the experimental plan.
 \toprule
 \textbf{Exp.} & \textbf{Purpose} & \textbf{Runs} & \textbf{Status} & \textbf{Hypotheses} \\
 \midrule
-A & Full-trace re-run & 60 & Planned & H1, H4, H6 \\
-B & Chain depth variation & 75 & Planned & H1, H3 \\
-C & Tracer injection & 36 & Planned & H1, H2 \\
+A & Full-trace re-run & 60 & Done & H1, H4, H6 \\
+B & Chain depth variation & 75 & Done & H1, H3 \\
+C & Tracer injection & 36 & Done & H1, H2 \\
 D & TL pass-through & 15 & \textbf{Done} & \textbf{H2} \\
 \bottomrule
 \end{tabular}
@@ -815,6 +815,14 @@ Comparing anchor (review enabled) vs.\ deep\_noreview, review protocols show dim
 Technical Depth improves most ($\Delta = +0.34$), followed by Feasibility ($\Delta = +0.20$), while Novelty ($\Delta = +0.08$) and Financial Rigor ($\Delta = -0.02$) are unaffected.
 This partially supports H5: review gates primarily reduce $D_k^{\text{noise}}$ in dimensions aligned with reviewer expertise (CDO for technical depth), rather than uniformly improving all dimensions.
 
+\subsection{Predictive Power of Information Metrics}
+
+At the per-run level ($n = 150$), we find that \textbf{CEO input volume} is the only significant predictor of output quality ($r = +0.317$, $p < 0.001$, $R^2 = 0.10$).
+Other information metrics---mean CR ($r = -0.006$, n.s.), min CR ($r = +0.057$, n.s.), and mean NF ($r = -0.101$, n.s.)---do not significantly predict quality at the individual-run level.
+
+This indicates that information metrics are most informative at the \emph{configuration level} (discriminating between organizational designs) rather than at the run level (discriminating between individual executions within a design).
+The large within-configuration variance in OQ scores (SD $\approx 0.8$--$1.0$) reflects the stochastic nature of LLM generation, which dominates run-level variation.
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -901,7 +909,7 @@ Through 186 controlled experiments and 372 quality evaluations, we established:
     \item \textbf{CEO input volume drives quality} ($r = +0.317$): The augmentation-mode CEO benefits from richer input, making mesh topologies advantageous when critical-path agents have sufficient capacity.
 \end{enumerate}
 
-These findings provide the first mechanistic explanation for why certain multi-agent topologies outperform others, and yield actionable design guidelines: minimize critical-path depth, invest in high-capacity relay agents, and route maximum information to augmentation-mode hubs.
+These findings provide a mechanistic explanation for why certain multi-agent topologies outperform others, and yield actionable design guidelines: minimize critical-path depth, invest in high-capacity relay agents, and route maximum information to augmentation-mode hubs.
 
 Future work includes dynamic organizational adaptation---using $D_k$ and channel saturation as real-time triggers for structural reconfiguration---and extending the framework to coding, reasoning, and other task domains.
 
