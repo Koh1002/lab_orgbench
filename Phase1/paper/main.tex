@@ -32,14 +32,13 @@ A Channel-Theoretic Analysis of LLM Multi-Agent Organizations}
 \maketitle
 
 \begin{abstract}
-LLM multi-agent systems adopt diverse organizational structures---hierarchies, review protocols, communication topologies---yet no framework explains \emph{why} some structures outperform others.
-We address this gap by modeling multi-agent organizations as \textbf{information processing graphs}, where each agent acts as a communication channel with role-dependent behavior: \textbf{compression} (filtering input), \textbf{augmentation} (injecting knowledge), or \textbf{saturation} (collapsing under excess input).
-Through 186 controlled experiments with tracer survival analysis, we show that:
-(1)~output quality decays with critical-path depth ($r = -0.458$, $p < 0.001$ per-run), driven by a Team Lead agent that destroys \textbf{71\% of injected tracer information in a single relay step};
-(2)~the depth penalty is partly caused by aggressive prompt-driven filtering (recoverable via prompt engineering) and partly by inherent LLM channel distortion ($\sim$7\% loss per relay step);
-(3)~high-capacity models eliminate the depth penalty entirely (Haiku at depth=4 matches GPT-4o-mini at depth=3);
-and (4)~mesh topologies saturate low-capacity agents (CR collapses to 0.06) but improve quality when critical-path agents have sufficient capacity.
-Our information-flow decomposition ($D_k = D_k^{\text{filter}} + D_k^{\text{noise}}$) provides actionable design guidelines: minimize critical-path depth, use high-capacity relay agents, and route maximum information to augmentation-mode hubs.
+LLM multi-agent systems adopt diverse organizational structures, yet no framework explains \emph{why} some structures outperform others.
+We address this gap by modeling agents as information channels and tracking synthetic ``tracer'' facts through agent pipelines.
+Our central finding is that \textbf{the Team Lead (intermediate management) agent destroys 71--97\% of task information in a single relay step}, as confirmed by four independent metrics.
+This is not merely information loss but \textbf{information blockage}: in flat organizations (no TL), downstream agents recover tracer facts to 70\% survival, while in deep hierarchies they remain at 10\%---a 6$\times$ difference.
+A controlled pass-through experiment reveals a dual mechanism: the TL's task-decomposition prompt causes aggressive over-filtering ($D_k^{\text{filter}}$), while the LLM channel itself introduces $\sim$7\% token loss per relay step ($D_k^{\text{noise}}$).
+Crucially, high-capacity models eliminate the depth penalty entirely (Haiku at depth=4 matches GPT-4o-mini at depth=3), and outputs that are semantically \emph{farther} from the task prompt are paradoxically higher quality ($r = -0.73$)---because the best organizations do not merely preserve information but \textbf{transform} it through augmentation.
+Through 186 experiments across 10 configurations, we establish that LLM multi-agent organizations are not information-preservation pipelines but \textbf{information-transformation networks}, where the design goal is to maximize net augmentation minus distortion.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -85,10 +84,11 @@ These observations suggest that LLM agents are not simple noisy channels subject
 
 Our contributions are:
 \begin{enumerate}
-    \item A \textbf{formal model} of multi-agent organizations as information processing graphs, where each agent is a communication channel with role-dependent capacity and three operating modes (preservation, compression, augmentation).
-    \item \textbf{Theoretical predictions} derived from the Data Processing Inequality, including the Depth-Distortion Principle (information fidelity decays exponentially with critical-path depth) and the decomposition of information loss into intentional filtering ($D_k^{\text{filter}}$) and unintentional noise ($D_k^{\text{noise}}$).
-    \item \textbf{Seven information-theoretic metrics} for quantifying information flow in multi-agent systems: compression ratio, semantic similarity decay, entity preservation rate, numerical fidelity, information density, and tracer survival rate.
-    \item \textbf{Empirical validation} through 186 controlled experiments across 10 configurations, including a pass-through control that disentangles prompt-driven filtering from channel-intrinsic distortion, and tracer injection experiments providing model-free information preservation measurements.
+    \item \textbf{The information-blockage mechanism}: We identify the Team Lead (intermediate management) agent as the primary cause of quality degradation, showing through four independent metrics (M1/M5/M6/M7) that it destroys 71--97\% of task information in a single step---not merely losing information but \emph{blocking} downstream agents from accessing it.
+    \item \textbf{A reframing from preservation to transformation}: We demonstrate that high-quality multi-agent outputs are semantically \emph{farther} from the task prompt ($r = -0.73$), establishing that effective organizations transform information through augmentation rather than merely preserving it.
+    The design goal is to maximize net augmentation minus distortion ($\sum A_k - \sum D_k$).
+    \item \textbf{A controlled decomposition of the depth penalty}: A pass-through experiment separates prompt-driven filtering ($D_k^{\text{filter}}$) from channel-intrinsic distortion ($D_k^{\text{noise}} \approx 7\%$/step), while model-capacity analysis shows that high-capacity models eliminate the depth penalty entirely.
+    \item \textbf{Empirical validation via tracer survival analysis}: Through 186 controlled experiments, we provide model-free measurements of information flow using synthetic tracer injection, showing 6$\times$ better information preservation in flat vs.\ deep organizations.
 \end{enumerate}
 
 \section{Related Work}
@@ -848,6 +848,18 @@ In deep configurations, compression steps outnumber augmentation steps, and the 
 In flat configurations, compression steps are minimized, allowing augmentation-mode agents to dominate (OQ is higher).
 This explains why flat\_mesh---which maximizes information delivery to the augmentation-mode CEO---achieves the highest quality.
 
+\subsection{From Preservation to Transformation: A Reframing}
+
+The most consequential finding of this study is that \textbf{LLM multi-agent organizations are not information-preservation pipelines but information-transformation networks}.
+
+This reframing is supported by three convergent observations:
+(1)~Outputs that are semantically \emph{farther} from the task prompt achieve \emph{higher} quality ($r = -0.73$), indicating that the best organizations enrich inputs through augmentation rather than faithfully relaying them.
+(2)~In flat\_mesh, the Writer \emph{recovers} tracer survival from 0.30 to 0.70 because it accesses the CEO's original output directly---demonstrating that downstream agents actively reconstruct information, not merely relay it.
+(3)~The CEO operates in augmentation mode (CR $= 1.85$), and more input produces better output ($r = +0.317$): the CEO is a knowledge amplifier whose effectiveness scales with input richness.
+
+The implication for organizational design is fundamental: the goal is not to minimize $\sum D_k$ (total distortion) but to maximize $\sum A_k - \sum D_k$ (net transformation).
+Deep hierarchies fail not because they lose information per se, but because they \emph{interpose compression-mode agents that block augmentation-mode agents from receiving rich input}.
+
 \subsection{Why Does Depth Hurt? A Dual Mechanism}
 
 Our Experiment~D results (Section~\ref{subsec:h2_result}) provide a definitive answer to the question posed in the Introduction.
@@ -865,20 +877,28 @@ This component is intrinsic to LLM channels and cannot be eliminated by prompt d
 
 \subsection{Practical Design Guidelines}
 
-Our findings yield three information-theoretic design principles:
+Our findings yield five design principles for information-transformation networks:
 
 \textbf{Guideline 1: Minimize critical-path depth, or use high-capacity relay agents.}
 Each relay step incurs $\sim$7\% token loss even with explicit relay instructions ($D_k^{\text{noise}}$).
-If an intermediate layer is needed for task decomposition, ensure it uses a high-capacity model (Haiku's TL: CR $= 0.87$ vs.\ GPT-4o-mini's TL: CR $= 0.35$).
-Alternatively, invest in prompt engineering to reduce $D_k^{\text{filter}}$ (the 60\% component).
+If an intermediate layer is needed, ensure it uses a high-capacity model (Haiku TL: CR $= 0.87$ vs.\ GPT-4o-mini TL: CR $= 0.35$).
+Alternatively, invest in prompt engineering to reduce $D_k^{\text{filter}}$.
 
-\textbf{Guideline 2: Match topology to agent capacity.}
-Mesh topologies increase information availability but can saturate low-capacity agents (CFO/CDO: CR $= 0.06$ in mesh vs.\ $0.35$ in hub).
-Use mesh only when all receiving agents have sufficient capacity; otherwise, route through a high-capacity hub.
-
-\textbf{Guideline 3: Place augmentation-mode agents at the hub.}
-The CEO (CR $= 1.85$) benefits from more input ($r = +0.207$, $p < 0.001$): richer input stimulates richer augmentation from prior knowledge.
+\textbf{Guideline 2: Route maximum information to augmentation-mode agents.}
+The CEO (CR $= 1.85$) benefits from more input ($r = +0.317$): richer input stimulates richer augmentation from prior knowledge.
 Agents that amplify information should receive maximal input; agents that filter should receive minimal input.
+
+\textbf{Guideline 3: Match topology to agent capacity.}
+Mesh topologies increase information availability but saturate low-capacity agents (CFO/CDO: CR $= 0.06$ in mesh vs.\ $0.35$ in hub).
+Use mesh only when all receiving agents have sufficient capacity.
+
+\textbf{Guideline 4: Deploy specialist reviewers for targeted quality dimensions.}
+Review gates improve specific quality dimensions aligned with reviewer expertise (CFO $\to$ Financial Rigor $+0.57$; CDO $\to$ Technical Depth $+0.37$) rather than uniformly improving output.
+Design review protocols around the dimensions that matter most for the use case.
+
+\textbf{Guideline 5: Consider task uncertainty.}
+Low-uncertainty tasks suffer a steeper depth penalty ($-0.46$/step) than medium-uncertainty tasks ($-0.25$/step), because they require accurate transmission of known facts rather than creative augmentation.
+For well-defined tasks, prioritize shallow structures; for exploratory tasks, augmentation-rich configurations may tolerate more depth.
 
 \subsection{Limitations}
 
@@ -914,21 +934,22 @@ This interaction warrants dedicated investigation.
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented an information-flow analysis framework for LLM multi-agent organizations, modeling agents as communication channels with three operating modes (preservation, compression, augmentation) and decomposing information dynamics into distortion ($D_k$) and augmentation ($A_k$) at each step.
+We set out to explain why shallow hierarchies outperform deep ones in LLM multi-agent systems.
+The answer is both simpler and more surprising than expected.
 
-Through 186 controlled experiments and 372 quality evaluations, we established:
+\textbf{The simple part}: the Team Lead agent destroys the vast majority of task information in a single relay step (71--97\% depending on the metric), and four independent metrics converge on this conclusion.
+A controlled pass-through experiment confirms a dual mechanism: aggressive prompt-driven filtering ($D_k^{\text{filter}}$) accounts for the majority, while inherent LLM channel distortion ($D_k^{\text{noise}} \approx 7\%$ token loss per step) contributes the remainder.
 
-\begin{enumerate}
-    \item \textbf{The Depth-Distortion Principle}: Quality decays near-linearly with critical-path depth ($r = -0.996$ for chain depths 2--4), at a rate of $-0.40$ OQ per step.
-    \item \textbf{A dual mechanism for the depth penalty}: intermediate agents' aggressive filtering ($D_k^{\text{filter}}$, addressable via prompt engineering) and depth-intrinsic channel distortion ($\sim$7\% token loss per relay step) both contribute, with tracer analysis showing 71\% information loss at the TL step.
-    \item \textbf{Channel saturation}: When input exceeds agent capacity, compression ratio collapses (CR $= 0.06$), but this is harmful only for critical-path agents.
-    \item \textbf{Model capacity eliminates the depth penalty}: High-capacity models (Haiku TL: CR $= 0.87$) make deep hierarchies viable; low-capacity models (GPT-4o-mini TL: CR $= 0.35$) make depth costly.
-    \item \textbf{CEO input volume drives quality} ($r = +0.317$): The augmentation-mode CEO benefits from richer input, making mesh topologies advantageous when critical-path agents have sufficient capacity.
-\end{enumerate}
+\textbf{The surprising part}: the problem is not merely information \emph{loss} but information \emph{blockage}.
+In flat organizations, downstream agents can access the CEO's original output and \emph{recover} information (Writer TSR rises from 0.30 to 0.70 in flat\_mesh).
+In deep hierarchies, the TL's filtering permanently removes information that no downstream agent can restore (Writer TSR stays at 0.10).
+Furthermore, the best outputs are semantically \emph{farther} from the task prompt ($r = -0.73$), revealing that high-quality organizations do not preserve task information verbatim---they \emph{transform} it through augmentation.
 
-These findings provide a mechanistic explanation for why certain multi-agent topologies outperform others, and yield actionable design guidelines: minimize critical-path depth, invest in high-capacity relay agents, and route maximum information to augmentation-mode hubs.
+This leads to our central reframing: \textbf{LLM multi-agent organizations are not information-preservation pipelines but information-transformation networks.}
+The design goal is not to minimize information loss, but to maximize the \emph{net transformation}: augmentation minus distortion.
+This reframing yields concrete design principles: minimize critical-path depth to reduce distortion, use high-capacity models to eliminate the depth penalty, route maximum information to augmentation-mode hubs (CEO), and match topology to agent capacity.
 
-Future work includes dynamic organizational adaptation---using $D_k$ and channel saturation as real-time triggers for structural reconfiguration---and extending the framework to coding, reasoning, and other task domains.
+Future work will leverage this framework for \emph{dynamic} organizational adaptation---using $D_k$ and channel saturation as real-time triggers for structural reconfiguration when the information-processing demands of a task exceed the current topology's capacity.
 
 \bibliographystyle{IEEEtran}
 
